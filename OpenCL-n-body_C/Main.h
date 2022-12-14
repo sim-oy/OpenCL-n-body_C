@@ -1,12 +1,14 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-const static int WINDOW_WIDTH = 500;
-const static int WINDOW_HEIGHT = 500;
-const static int PARTICLEAMOUNT = 500;
+#define randf() (float)rand()/(float)(RAND_MAX)
 
-#define randf() static_cast <float> (rand()) / static_cast <float> (RAND_MAX)
+#define WINDOW_WIDTH 500
+#define WINDOW_HEIGHT 500
+#define PARTICLEAMOUNT 10
 
-void DrawParticles(float* particles);
+extern const double G = 0.0000000001;
+
+void DrawParticles(float* particles, char* windowBuffer);
 
 #endif

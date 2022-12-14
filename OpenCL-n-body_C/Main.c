@@ -1,8 +1,8 @@
-#include <SFML/Graphics.h>
-#include <SFML/Window.h>
-#include <stdio.h>
-#include <Cl/cl.h>
 #include "Main.h"
+#include <SFML/Graphics.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <Cl/cl.h>
 
 struct Color
 {
@@ -13,10 +13,11 @@ struct Color
 };
 
 int main() {
-	printf("start");
+	printf("start\n");
 
+    //float* particles = (float*) malloc(PARTICLEAMOUNT * 5 * sizeof(float));
     float particles[PARTICLEAMOUNT * 5];
-
+    
     srand(0);
     for (int i = 0; i < PARTICLEAMOUNT; i += 5) {
         particles[i] = randf() * 0.2f + 0.4f;
@@ -24,24 +25,24 @@ int main() {
         particles[i + 2] = 0;
         particles[i + 3] = 0;
         particles[i + 4] = randf();
+
+        printf("%f\n", particles[i]);
     }
     
-    char windowBuffer[WINDOW_WIDTH * WINDOW_HEIGHT * 4];
+    char* windowBuffer = (char*)malloc(WINDOW_WIDTH * WINDOW_HEIGHT * 4 * sizeof(char));
     
-	sfVideoMode mode = { WINDOW_WIDTH, WINDOW_HEIGHT, 32 };
-	
+    sfVideoMode mode = { WINDOW_WIDTH, WINDOW_HEIGHT, 32 };
     sfRenderWindow* window;
-    sfTexture* buffer;
 	sfEvent event;
+    sfRenderTexture* RenderTexture = sfRenderTexture_create(WINDOW_WIDTH, WINDOW_HEIGHT, 0);
 
 	window = sfRenderWindow_create(mode, "My Window", sfClose, NULL);
     if (!window)
         return -1;
-    buffer = sfTexture_create(sfRenderWindow_getSize(window).x, sfRenderWindow_getSize(window).y);
+    
+    
 
-    sfSprite* sprite;
-    sprite = sfSprite_create();
-    sfSprite_setTexture(sprite, buffer, sfTrue);
+    //printf("%f\n", windowBuffer[0]);
 
     while (sfRenderWindow_isOpen(window))
     {
@@ -51,20 +52,122 @@ int main() {
                 sfRenderWindow_close(window);
         }
 
-        sfRenderWindow_clear(window, sfBlack);
+        sfRenderWindow_clear(RenderTexture, sfBlack);
 
-        DrawParticles(particles);
+        DrawParticles(particles, windowBuffer);
 
-        sfRenderWindow_display(window);
+        sfTexture_updateFromPixels(sfRenderTexture_getTexture(RenderTexture), windowBuffer, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0);
+
+        sfRenderTexture_display(RenderTexture);
     }
 
     sfRenderWindow_destroy(window);
+    free(particles);
+    free(windowBuffer);
 
-    printf("end");
+    printf("end\n");
     return 0;
 }
 
-void DrawParticles(float* particles) {
+void DrawParticles(float* particles, char* windowBuffer) {
+    for (int i = 0; i < PARTICLEAMOUNT; i += 5) {
+        if (particles[i] < 0 || particles[i] >= 1.0 || particles[i + 1] < 0 || particles[i + 1] >= 1.0)
+            return;
+
+        int x = (int)(particles[i] * WINDOW_WIDTH);
+        int y = (int)(particles[i + 1] * WINDOW_HEIGHT);
+
+        int index = (y * WINDOW_WIDTH + x) * 4;
+
+        windowBuffer[index] = (char)255;
+        windowBuffer[index + 1] = (char)255;
+        windowBuffer[index + 2] = (char)255;
+        windowBuffer[index + 3] = (char)255;
+
+    }
+}
+
+
+/*
+// Create a render texture
+sfRenderTexture* renderTexture = sfRenderTexture_create(windowWidth, windowHeight, 0);
+
+// Create an array of pixels
+int arrayWidth = 10;
+int arrayHeight = 10;
+sfUint8 pixels[arrayWidth * arrayHeight * 4];
+
+// Fill the array with pixel data
+for (int i = 0; i < arrayWidth * arrayHeight * 4; i += 4)
+{
+    pixels[i] = 255;     // Red channel
+    pixels[i + 1] = 0;   // Green channel
+    pixels[i + 2] = 0;   // Blue channel
+    pixels[i + 3] = 255; // Alpha channel
+}
+
+// Update the texture of the render texture with the pixel data from the array
+sfTexture_updateFromPixels(sfRenderTexture_getTexture(renderTexture), pixels, arrayWidth, arrayHeight, 0, 0);
+
+// Draw the render texture to the screen
+sfRenderWindow_drawRenderTexture(window, renderTexture, NULL);*/
+
+
+/******************************************************************************
+
+                            Online C Compiler.
+                Code, Compile, Run and Debug C program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+#include <stdio.h>
+#include <stdlib.h>
+
+#define randf() (float)rand()/(float)(RAND_MAX)
+
+#define WINDOW_WIDTH 500
+#define WINDOW_HEIGHT 500
+#define PARTICLEAMOUNT 10000
+
+void DrawParticles(float* particles, char* windowBuffer);
+
+int main()
+{
+    printf("Hello World\n");
+
+    float* particles = (float*)malloc(PARTICLEAMOUNT * 5 * sizeof(float));
+
+    char* windowBuffer = (char*)malloc(WINDOW_WIDTH * WINDOW_HEIGHT * 4);
+
+    for (int i = 0; i < PARTICLEAMOUNT; i += 5) {
+        particles[i] = randf() * 0.2f + 0.4f;
+        particles[i + 1] = randf() * 0.2f + 0.4f;
+        particles[i + 2] = 0;
+        particles[i + 3] = 0;
+        particles[i + 4] = randf();
+    }
+
+
+    DrawParticles(particles, windowBuffer);
+
+
+    for (int i = 0; i < WINDOW_WIDTH * WINDOW_WIDTH; i += 4) {
+        /*
+        printf("%d", windowBuffer[i]);
+        printf(" %d", windowBuffer[i + 1]);
+        printf(" %d", windowBuffer[i + 2]);
+        printf(" %d\n", windowBuffer[i + 3]);*/
+
+        if (windowBuffer[i] != 0) {
+            printf("aaa\n");
+        }
+    }
+
+    return 0;
+}
+
+
+void DrawParticles(float* particles, char* windowBuffer) {
     for (int i = 0; i < PARTICLEAMOUNT; i += 5) {
         if (particles[i] < 0 || particles[i] >= 1.0 || particles[i + 1] < 0 || particles[i + 1] >= 1.0)
             return;

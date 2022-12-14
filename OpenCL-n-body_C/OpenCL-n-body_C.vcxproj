@@ -105,13 +105,13 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>C:\Users\Simo\Documents\C_C++ Libraries\CSFML-2.5.1-windows-64-bit\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Hupi\Documents\C_C++ Libraries\CSFML-2.5.1-windows-64-bit\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>csfml-audio.lib;csfml-graphics.lib;csfml-main.lib;csfml-network.lib;csfml-system.lib;csfml-window.lib;OpenCL.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\Simo\Documents\C_C++ Libraries\CSFML-2.5.1-windows-64-bit\lib\msvc;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\Hupi\Documents\C_C++ Libraries\CSFML-2.5.1-windows-64-bit\lib\msvc;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
