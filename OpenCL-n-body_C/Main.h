@@ -5,7 +5,7 @@
 
 #define WINDOW_WIDTH 500
 #define WINDOW_HEIGHT 500
-#define PARTICLEAMOUNT 10
+#define PARTICLEAMOUNT 1000
 
 extern const double G = 0.0000000001;
 

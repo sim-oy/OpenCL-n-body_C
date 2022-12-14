@@ -4,8 +4,7 @@
 #include <stdlib.h>
 #include <Cl/cl.h>
 
-struct Color
-{
+struct Color {
     char R;
     char G;
     char B;
@@ -25,64 +24,69 @@ int main() {
         particles[i + 2] = 0;
         particles[i + 3] = 0;
         particles[i + 4] = randf();
-
-        printf("%f\n", particles[i]);
     }
     
-    char* windowBuffer = (char*)malloc(WINDOW_WIDTH * WINDOW_HEIGHT * 4 * sizeof(char));
+    //char* windowBuffer = (char*)malloc(WINDOW_WIDTH * WINDOW_HEIGHT * 4 * sizeof(char));
+    sfInt8 windowBuffer[WINDOW_WIDTH * WINDOW_HEIGHT * 4];
     
     sfVideoMode mode = { WINDOW_WIDTH, WINDOW_HEIGHT, 32 };
     sfRenderWindow* window;
 	sfEvent event;
     sfRenderTexture* RenderTexture = sfRenderTexture_create(WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    sfSprite* sprite;
 
 	window = sfRenderWindow_create(mode, "My Window", sfClose, NULL);
     if (!window)
         return -1;
-    
+    sprite = sfSprite_create();
     
 
     //printf("%f\n", windowBuffer[0]);
 
     while (sfRenderWindow_isOpen(window))
     {
-        while (sfRenderWindow_pollEvent(window, &event))
+        while (sfRenderWindow_pollEvent(window, &event)) 
         {
             if (event.type == sfEvtClosed)
                 sfRenderWindow_close(window);
         }
 
-        sfRenderWindow_clear(RenderTexture, sfBlack);
+        sfRenderWindow_clear(window, sfBlack);
 
         DrawParticles(particles, windowBuffer);
-
+        
         sfTexture_updateFromPixels(sfRenderTexture_getTexture(RenderTexture), windowBuffer, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0);
 
-        sfRenderTexture_display(RenderTexture);
+        //sfRenderTexture_display(RenderTexture);
+
+        sfSprite_setTexture(sprite, sfRenderTexture_getTexture(RenderTexture), sfFalse);
+
+        sfRenderWindow_drawSprite(window, sprite, NULL);
+
+        sfRenderWindow_display(window);
     }
 
     sfRenderWindow_destroy(window);
-    free(particles);
-    free(windowBuffer);
 
     printf("end\n");
     return 0;
 }
 
-void DrawParticles(float* particles, char* windowBuffer) {
-    for (int i = 0; i < PARTICLEAMOUNT; i += 5) {
+void DrawParticles(float particles[], char windowBuffer[]) {
+    int sum = 0;
+    for (int i = 0; i < PARTICLEAMOUNT * 5; i += 5) {
         if (particles[i] < 0 || particles[i] >= 1.0 || particles[i + 1] < 0 || particles[i + 1] >= 1.0)
             return;
-
+        sum++;
         int x = (int)(particles[i] * WINDOW_WIDTH);
         int y = (int)(particles[i + 1] * WINDOW_HEIGHT);
 
         int index = (y * WINDOW_WIDTH + x) * 4;
 
-        windowBuffer[index] = (char)255;
-        windowBuffer[index + 1] = (char)255;
-        windowBuffer[index + 2] = (char)255;
-        windowBuffer[index + 3] = (char)255;
+        windowBuffer[index] = (sfInt8)255;
+        windowBuffer[index + 1] = (sfInt8)255;
+        windowBuffer[index + 2] = (sfInt8)255;
+        windowBuffer[index + 3] = (sfInt8)255;
 
     }
 }
@@ -113,13 +117,7 @@ sfTexture_updateFromPixels(sfRenderTexture_getTexture(renderTexture), pixels, ar
 sfRenderWindow_drawRenderTexture(window, renderTexture, NULL);*/
 
 
-/******************************************************************************
-
-                            Online C Compiler.
-                Code, Compile, Run and Debug C program online.
-Write your code in this editor and press "Run" button to compile and execute it.
-
-*******************************************************************************/
+/*
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -152,11 +150,11 @@ int main()
 
 
     for (int i = 0; i < WINDOW_WIDTH * WINDOW_WIDTH; i += 4) {
-        /*
+        
         printf("%d", windowBuffer[i]);
         printf(" %d", windowBuffer[i + 1]);
         printf(" %d", windowBuffer[i + 2]);
-        printf(" %d\n", windowBuffer[i + 3]);*/
+        printf(" %d\n", windowBuffer[i + 3]);
 
         if (windowBuffer[i] != 0) {
             printf("aaa\n");
@@ -183,4 +181,4 @@ void DrawParticles(float* particles, char* windowBuffer) {
         windowBuffer[index + 3] = (char)255;
 
     }
-}
+}*/
