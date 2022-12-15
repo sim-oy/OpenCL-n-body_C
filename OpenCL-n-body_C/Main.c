@@ -45,21 +45,29 @@ int main() {
     int frames = 0;
     double times[FRAMES_PER_PRINT];
 
+    char* filename = "data.txt";
+
     while (sfRenderWindow_isOpen(window))
     {
         oa_tim_strt = clock();
+
         while (sfRenderWindow_pollEvent(window, &event)) 
         {
             if (event.type == sfEvtClosed)
                 sfRenderWindow_close(window);
         }
+
+        if (WRITE_TO_FILE) {
+            FILE* file = fopen(filename, "w");
+            for (int i = 0; i < 10; i++)
+                fprintf(file, "This is the line #%d\n", i + 1);
+            fclose(file);
+        }
+
         sfRenderWindow_clear(window, sfBlack);
         memset(windowBuffer, 0, sizeof(windowBuffer));
 
         Calculate(particles, PARTICLEAMOUNT);
-
-        
-
         DrawParticles(particles, windowBuffer);
         
         sfTexture_updateFromPixels(Texture, windowBuffer, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0);
@@ -81,7 +89,7 @@ int main() {
             frames++;
         }
     }
-
+    
     sfRenderWindow_destroy(window);
 
     printf("end\n");

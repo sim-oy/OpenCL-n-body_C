@@ -6,6 +6,8 @@
 #define FRAMES_PER_PRINT 2
 #define WINDOW_WIDTH 500
 #define WINDOW_HEIGHT 500
+#define WRITE_TO_FILE 1
+
 #define PARTICLEAMOUNT 6000
 
 void DrawParticles(float particles[], char windowBuffer[]);
