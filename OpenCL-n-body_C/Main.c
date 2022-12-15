@@ -1,5 +1,6 @@
- #include "Main.h"
+#include "Main.h"
 #include "Program.h"
+#include "GlobalSettings.h"
 #include <SFML/Graphics.h>
 #include <SFML/Window.h>
 #include <stdio.h>
@@ -9,22 +10,29 @@
 #include <time.h>
 #include <Cl/cl.h>
 
-
 int main() {
 	printf("start\n");
-
-    //float* particles = (float*) malloc(PARTICLEAMOUNT * 5 * sizeof(float));
-    static float particles[PARTICLEAMOUNT * 5];
-    
     srand(0);
-    for (int i = 0; i < PARTICLEAMOUNT * 5; i += 5) {
-        particles[i] = randf();
-        particles[i + 1] = randf();
-        particles[i + 2] = 0;
-        particles[i + 3] = 0;
-        particles[i + 4] = randf();
+    
+    static float particles[N * 5];
+    GenerateParticles(particles);
+
+    static float px[N_PAR][N / N_PAR],
+                 py[N_PAR][N / N_PAR],
+                 pvx[N_PAR][N / N_PAR],
+                 pvy[N_PAR][N / N_PAR],
+                 pm[N_PAR][N / N_PAR];
+    for (int i = 0; i < N_PAR; i++) {
+        for (int j = 0; j < N / N_PAR; j++) {
+            px[i][j] = randf();
+            py[i][j] = randf();
+            pvx[i][j] = 0;
+            pvy[i][j] = 0;
+            pm[i][j] = randf();
+        }
     }
     
+
     //char* windowBuffer = (char*)malloc(WINDOW_WIDTH * WINDOW_HEIGHT * 4 * sizeof(char));
     char windowBuffer[WINDOW_WIDTH * WINDOW_HEIGHT * 4];
     
@@ -45,7 +53,12 @@ int main() {
     int frames = 0;
     double times[FRAMES_PER_PRINT];
 
-    char* filename = "data.txt";
+    FILE* file = NULL;
+    if (fopen_s(&file, "data.txt", "w") != 0)
+    {
+        printf("Error opening to the file");
+        return -1;
+    }
 
     while (sfRenderWindow_isOpen(window))
     {
@@ -56,18 +69,23 @@ int main() {
             if (event.type == sfEvtClosed)
                 sfRenderWindow_close(window);
         }
+        sfRenderWindow_clear(window, sfBlack);
 
         if (WRITE_TO_FILE) {
-            FILE* file = fopen(filename, "w");
-            for (int i = 0; i < 10; i++)
-                fprintf(file, "This is the line #%d\n", i + 1);
-            fclose(file);
+            for (int i = 0; i < N * 5; i += 5) {
+                fprintf(file, "%f%f%f%f%f\n", 
+                particles[i],
+                particles[i + 1],
+                particles[i + 2],
+                particles[i + 3],
+                particles[i + 4]);
+            }
         }
 
-        sfRenderWindow_clear(window, sfBlack);
-        memset(windowBuffer, 0, sizeof(windowBuffer));
+        CalculateSingleArray(particles);
+        //CalculateSIMD(px, py, pvx, pvy, pm);
 
-        Calculate(particles, PARTICLEAMOUNT);
+        memset(windowBuffer, 0, sizeof(windowBuffer));
         DrawParticles(particles, windowBuffer);
         
         sfTexture_updateFromPixels(Texture, windowBuffer, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0);
@@ -82,14 +100,14 @@ int main() {
         times[frames] = elapsedTime_s;
         if (frames >= FRAMES_PER_PRINT - 1) {
             double avg_elapsedTime_s = DoubleArraySum(times, FRAMES_PER_PRINT) / (double)FRAMES_PER_PRINT;
-            printf("time: ms %d\t fps: %d\n", (int)(avg_elapsedTime_s * 1000), (int)(1 / avg_elapsedTime_s));
+            printf("time: ms %d\t fps: %.1lf\n", (int)(avg_elapsedTime_s * 1000), 1.0 / avg_elapsedTime_s);
             frames = 0;
         }
         else {
             frames++;
         }
     }
-    
+    fclose(file);
     sfRenderWindow_destroy(window);
 
     printf("end\n");
@@ -98,7 +116,7 @@ int main() {
 
 void DrawParticles(float particles[], char windowBuffer[]) {
     int sum = 0;
-    for (int i = 0; i < PARTICLEAMOUNT * 5; i += 5) {
+    for (int i = 0; i < N * 5; i += 5) {
         if (particles[i] < 0 || particles[i] >= 1.0 || particles[i + 1] < 0 || particles[i + 1] >= 1.0) {
             continue;
         }
@@ -123,93 +141,12 @@ double DoubleArraySum(double array[], int len) {
     return sum;
 }
 
-/*
-// Create a render texture
-sfRenderTexture* renderTexture = sfRenderTexture_create(windowWidth, windowHeight, 0);
-
-// Create an array of pixels
-int arrayWidth = 10;
-int arrayHeight = 10;
-sfUint8 pixels[arrayWidth * arrayHeight * 4];
-
-// Fill the array with pixel data
-for (int i = 0; i < arrayWidth * arrayHeight * 4; i += 4)
-{
-    pixels[i] = 255;     // Red channel
-    pixels[i + 1] = 0;   // Green channel
-    pixels[i + 2] = 0;   // Blue channel
-    pixels[i + 3] = 255; // Alpha channel
+void GenerateParticles(float particles[]) {
+    for (int i = 0; i < N; i++) {
+        particles[i * 5] = randf();
+        particles[i * 5 + 1] = randf();
+        particles[i * 5 + 2] = 0;
+        particles[i * 5 + 3] = 0;
+        particles[i * 5 + 4] = randf();
+    }
 }
-
-// Update the texture of the render texture with the pixel data from the array
-sfTexture_updateFromPixels(sfRenderTexture_getTexture(renderTexture), pixels, arrayWidth, arrayHeight, 0, 0);
-
-// Draw the render texture to the screen
-sfRenderWindow_drawRenderTexture(window, renderTexture, NULL);*/
-
-
-/*
-#include <stdio.h>
-#include <stdlib.h>
-
-#define randf() (float)rand()/(float)(RAND_MAX)
-
-#define WINDOW_WIDTH 500
-#define WINDOW_HEIGHT 500
-#define PARTICLEAMOUNT 10000
-
-void DrawParticles(float* particles, char* windowBuffer);
-
-int main()
-{
-    printf("Hello World\n");
-
-    float* particles = (float*)malloc(PARTICLEAMOUNT * 5 * sizeof(float));
-
-    char* windowBuffer = (char*)malloc(WINDOW_WIDTH * WINDOW_HEIGHT * 4);
-
-    for (int i = 0; i < PARTICLEAMOUNT; i += 5) {
-        particles[i] = randf() * 0.2f + 0.4f;
-        particles[i + 1] = randf() * 0.2f + 0.4f;
-        particles[i + 2] = 0;
-        particles[i + 3] = 0;
-        particles[i + 4] = randf();
-    }
-
-
-    DrawParticles(particles, windowBuffer);
-
-
-    for (int i = 0; i < WINDOW_WIDTH * WINDOW_WIDTH; i += 4) {
-        
-        printf("%d", windowBuffer[i]);
-        printf(" %d", windowBuffer[i + 1]);
-        printf(" %d", windowBuffer[i + 2]);
-        printf(" %d\n", windowBuffer[i + 3]);
-
-        if (windowBuffer[i] != 0) {
-            printf("aaa\n");
-        }
-    }
-
-    return 0;
-}
-
-
-void DrawParticles(float* particles, char* windowBuffer) {
-    for (int i = 0; i < PARTICLEAMOUNT; i += 5) {
-        if (particles[i] < 0 || particles[i] >= 1.0 || particles[i + 1] < 0 || particles[i + 1] >= 1.0)
-            return;
-
-        int x = (int)(particles[i] * WINDOW_WIDTH);
-        int y = (int)(particles[i + 1] * WINDOW_HEIGHT);
-
-        int index = (y * WINDOW_WIDTH + x) * 4;
-
-        windowBuffer[index] = (char)255;
-        windowBuffer[index + 1] = (char)255;
-        windowBuffer[index + 2] = (char)255;
-        windowBuffer[index + 3] = (char)255;
-
-    }
-}*/
