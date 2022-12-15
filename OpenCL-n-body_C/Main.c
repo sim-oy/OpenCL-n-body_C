@@ -1,7 +1,9 @@
 #include "Main.h"
 #include <SFML/Graphics.h>
+#include <SFML/Window.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <float.h>
 #include <Cl/cl.h>
 
 struct Color {
@@ -15,10 +17,10 @@ int main() {
 	printf("start\n");
 
     //float* particles = (float*) malloc(PARTICLEAMOUNT * 5 * sizeof(float));
-    float particles[PARTICLEAMOUNT * 5];
+    static float particles[PARTICLEAMOUNT * 5];
     
     srand(0);
-    for (int i = 0; i < PARTICLEAMOUNT; i += 5) {
+    for (int i = 0; i < PARTICLEAMOUNT * 5; i += 5) {
         particles[i] = randf() * 0.2f + 0.4f;
         particles[i + 1] = randf() * 0.2f + 0.4f;
         particles[i + 2] = 0;
@@ -27,21 +29,19 @@ int main() {
     }
     
     //char* windowBuffer = (char*)malloc(WINDOW_WIDTH * WINDOW_HEIGHT * 4 * sizeof(char));
-    sfInt8 windowBuffer[WINDOW_WIDTH * WINDOW_HEIGHT * 4];
+    char windowBuffer[WINDOW_WIDTH * WINDOW_HEIGHT * 4];
     
     sfVideoMode mode = { WINDOW_WIDTH, WINDOW_HEIGHT, 32 };
     sfRenderWindow* window;
 	sfEvent event;
-    sfRenderTexture* RenderTexture = sfRenderTexture_create(WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    sfTexture* Texture = sfTexture_create(WINDOW_WIDTH, WINDOW_HEIGHT);
     sfSprite* sprite;
 
 	window = sfRenderWindow_create(mode, "My Window", sfClose, NULL);
     if (!window)
         return -1;
+    sfRenderWindow_setVerticalSyncEnabled(window, sfFalse);
     sprite = sfSprite_create();
-    
-
-    //printf("%f\n", windowBuffer[0]);
 
     while (sfRenderWindow_isOpen(window))
     {
@@ -50,17 +50,13 @@ int main() {
             if (event.type == sfEvtClosed)
                 sfRenderWindow_close(window);
         }
-
         sfRenderWindow_clear(window, sfBlack);
+        memset(windowBuffer, 0, sizeof(windowBuffer));
 
         DrawParticles(particles, windowBuffer);
         
-        sfTexture_updateFromPixels(sfRenderTexture_getTexture(RenderTexture), windowBuffer, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0);
-
-        //sfRenderTexture_display(RenderTexture);
-
-        sfSprite_setTexture(sprite, sfRenderTexture_getTexture(RenderTexture), sfFalse);
-
+        sfTexture_updateFromPixels(Texture, windowBuffer, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0);
+        sfSprite_setTexture(sprite, Texture, sfFalse);
         sfRenderWindow_drawSprite(window, sprite, NULL);
 
         sfRenderWindow_display(window);
@@ -75,19 +71,22 @@ int main() {
 void DrawParticles(float particles[], char windowBuffer[]) {
     int sum = 0;
     for (int i = 0; i < PARTICLEAMOUNT * 5; i += 5) {
-        if (particles[i] < 0 || particles[i] >= 1.0 || particles[i + 1] < 0 || particles[i + 1] >= 1.0)
+        if (particles[i] < 0 || particles[i] >= 1.0 || particles[i + 1] < 0 || particles[i + 1] >= 1.0) {
             return;
-        sum++;
+        }
+        
         int x = (int)(particles[i] * WINDOW_WIDTH);
         int y = (int)(particles[i + 1] * WINDOW_HEIGHT);
 
         int index = (y * WINDOW_WIDTH + x) * 4;
 
-        windowBuffer[index] = (sfInt8)255;
-        windowBuffer[index + 1] = (sfInt8)255;
-        windowBuffer[index + 2] = (sfInt8)255;
-        windowBuffer[index + 3] = (sfInt8)255;
+        particles[i] += 0.00001;
+        particles[i + 1] += 0.00001;
 
+        windowBuffer[index] = 255;
+        windowBuffer[index + 1] = 255;
+        windowBuffer[index + 2] = 255;
+        windowBuffer[index + 3] = 255;
     }
 }
 
