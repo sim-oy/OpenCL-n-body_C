@@ -3,12 +3,12 @@
 
 #define randf() ((float)rand()/(float)(RAND_MAX))
 
+#define FRAMES_PER_PRINT 2
 #define WINDOW_WIDTH 500
 #define WINDOW_HEIGHT 500
-#define PARTICLEAMOUNT 3
-
-extern const double G = 0.0000000001;
+#define PARTICLEAMOUNT 6000
 
 void DrawParticles(float particles[], char windowBuffer[]);
+double DoubleArraySum(double array[], int len);
 
 #endif

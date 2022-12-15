@@ -1,17 +1,14 @@
-#include "Main.h"
+ #include "Main.h"
+#include "Program.h"
 #include <SFML/Graphics.h>
 #include <SFML/Window.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <float.h>
+#include <time.h>
 #include <Cl/cl.h>
 
-struct Color {
-    char R;
-    char G;
-    char B;
-    char A;
-};
 
 int main() {
 	printf("start\n");
@@ -21,8 +18,8 @@ int main() {
     
     srand(0);
     for (int i = 0; i < PARTICLEAMOUNT * 5; i += 5) {
-        particles[i] = randf() * 0.2f + 0.4f;
-        particles[i + 1] = randf() * 0.2f + 0.4f;
+        particles[i] = randf();
+        particles[i + 1] = randf();
         particles[i + 2] = 0;
         particles[i + 3] = 0;
         particles[i + 4] = randf();
@@ -43,8 +40,14 @@ int main() {
     sfRenderWindow_setVerticalSyncEnabled(window, sfFalse);
     sprite = sfSprite_create();
 
+    clock_t oa_tim_strt = 0, oa_tim_end = 0;
+
+    int frames = 0;
+    double times[FRAMES_PER_PRINT];
+
     while (sfRenderWindow_isOpen(window))
     {
+        oa_tim_strt = clock();
         while (sfRenderWindow_pollEvent(window, &event)) 
         {
             if (event.type == sfEvtClosed)
@@ -53,6 +56,10 @@ int main() {
         sfRenderWindow_clear(window, sfBlack);
         memset(windowBuffer, 0, sizeof(windowBuffer));
 
+        Calculate(particles, PARTICLEAMOUNT);
+
+        
+
         DrawParticles(particles, windowBuffer);
         
         sfTexture_updateFromPixels(Texture, windowBuffer, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0);
@@ -60,6 +67,19 @@ int main() {
         sfRenderWindow_drawSprite(window, sprite, NULL);
 
         sfRenderWindow_display(window);
+
+        oa_tim_end = clock();
+
+        double elapsedTime_s = ((double)(oa_tim_end - oa_tim_strt)) / CLOCKS_PER_SEC;
+        times[frames] = elapsedTime_s;
+        if (frames >= FRAMES_PER_PRINT - 1) {
+            double avg_elapsedTime_s = DoubleArraySum(times, FRAMES_PER_PRINT) / (double)FRAMES_PER_PRINT;
+            printf("time: ms %d\t fps: %d\n", (int)(avg_elapsedTime_s * 1000), (int)(1 / avg_elapsedTime_s));
+            frames = 0;
+        }
+        else {
+            frames++;
+        }
     }
 
     sfRenderWindow_destroy(window);
@@ -72,16 +92,13 @@ void DrawParticles(float particles[], char windowBuffer[]) {
     int sum = 0;
     for (int i = 0; i < PARTICLEAMOUNT * 5; i += 5) {
         if (particles[i] < 0 || particles[i] >= 1.0 || particles[i + 1] < 0 || particles[i + 1] >= 1.0) {
-            return;
+            continue;
         }
         
         int x = (int)(particles[i] * WINDOW_WIDTH);
         int y = (int)(particles[i + 1] * WINDOW_HEIGHT);
 
         int index = (y * WINDOW_WIDTH + x) * 4;
-
-        particles[i] += 0.00001;
-        particles[i + 1] += 0.00001;
 
         windowBuffer[index] = 255;
         windowBuffer[index + 1] = 255;
@@ -90,6 +107,13 @@ void DrawParticles(float particles[], char windowBuffer[]) {
     }
 }
 
+double DoubleArraySum(double array[], int len) {
+    double sum = 0;
+    for (int i = 0; i < len; i++) {
+        sum += array[i];
+    }
+    return sum;
+}
 
 /*
 // Create a render texture
