@@ -1,5 +1,6 @@
 #include "Main.h"
 #include "Program.h"
+#include "OpenCL.h"
 #include "GlobalSettings.h"
 #include <SFML/Graphics.h>
 #include <SFML/Window.h>
@@ -31,6 +32,8 @@ int main() {
             pm[i][j] = randf();
         }
     }
+
+    CLInit();
     
 
     //char* windowBuffer = (char*)malloc(WINDOW_WIDTH * WINDOW_HEIGHT * 4 * sizeof(char));
@@ -73,12 +76,9 @@ int main() {
 
         if (WRITE_TO_FILE) {
             for (int i = 0; i < N * 5; i += 5) {
-                fprintf(file, "%f%f%f%f%f\n", 
+                fprintf(file, "%f%f\n", 
                 particles[i],
-                particles[i + 1],
-                particles[i + 2],
-                particles[i + 3],
-                particles[i + 4]);
+                particles[i + 1]);
             }
         }
 
