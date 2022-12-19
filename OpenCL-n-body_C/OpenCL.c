@@ -10,8 +10,13 @@ void CheckErr(cl_int err, char* msg);
 void build_error_callback(cl_program program, void* user_data);
 void CheckArgErr(cl_kernel kernel, int arg_indx, cl_int err);
 
-void CLInit(float particles[]) {
-	cl_int err = 0;
+cl_command_queue queue;
+cl_kernel kernel;
+cl_mem pos_buf;
+cl_int err;
+
+
+void CLInit(float particles[], int arr_len) {
 
 	char* sourceName = "Kernel.cl";
 	char* shader = RdFstr(sourceName);
@@ -30,16 +35,13 @@ void CLInit(float particles[]) {
 	clGetDeviceIDs(platforms[0], CL_DEVICE_TYPE_ALL, num_devices, devices, NULL);
 	CheckErr(err, "Error getting device IDs");
 
-	cl_context context;
-	cl_command_queue queue;
-
-	context = clCreateContext(NULL, num_devices, devices, NULL, NULL, &err);
+	cl_context context = clCreateContext(NULL, num_devices, devices, NULL, NULL, &err);
 	CheckErr(err, "Error creating context");
 
 	queue = clCreateCommandQueue(context, devices[0], 0, &err);
 	CheckErr(err, "Error creating command queue");
 
-	cl_mem pos_buf = clCreateBuffer(context, CL_MEM_READ_WRITE, N * sizeof(float), NULL, &err);
+	pos_buf = clCreateBuffer(context, CL_MEM_READ_WRITE, arr_len * sizeof(cl_float), NULL, &err);
 	CheckErr(err, "Error creating buffer");
 
 	cl_program program = clCreateProgramWithSource(context, 1, &shader, NULL, &err);
@@ -53,38 +55,60 @@ void CLInit(float particles[]) {
 		clGetProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
 		printf("Build errors:\n%s\n", log);
 		free(log);
+		printf("%Error building program: %d\n", err);
+		exit(-1);
 	}
-	CheckErr(err, "Error building program");
 
-	cl_kernel kernel;
 	kernel = clCreateKernel(program, "Calc", &err);
 	CheckErr(err, "Error creating kernel");
 
 	err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &pos_buf);
 	CheckArgErr(kernel, 0, err);
-	err = clSetKernelArg(kernel, 1, sizeof(float), &G);
+	err = clSetKernelArg(kernel, 1, sizeof(cl_float), &G);
 	CheckArgErr(kernel, 1, err);
-	err = clSetKernelArg(kernel, 2, sizeof(float), &smoothing);
+	err = clSetKernelArg(kernel, 2, sizeof(cl_float), &smoothing);
 	CheckArgErr(kernel, 2, err);
-	err = clSetKernelArg(kernel, 3, sizeof(int), (int*)N);
+	int n = N;
+	err = clSetKernelArg(kernel, 3, sizeof(cl_int), &n);
 	CheckArgErr(kernel, 3, err);
+
+	clEnqueueWriteBuffer(queue, pos_buf, CL_FALSE, 0, arr_len * sizeof(cl_float), particles, 0, NULL, NULL);
 
 	size_t global_size = N;
 	err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_size, NULL, 0, NULL, NULL);
 	CheckErr(err, "Error executing kernel");
+
 	err = clFinish(queue);
 	CheckErr(err, "Error finishing queue");
-	void* ptr = 0;
-	err = clEnqueueReadBuffer(queue, pos_buf, CL_TRUE, 0, sizeof(float) * N, ptr, 0, NULL, NULL);
+
+	err = clEnqueueReadBuffer(queue, pos_buf, CL_FALSE, 0, arr_len * sizeof(cl_float), particles, 0, NULL, NULL);
 	CheckErr(err, "Error reading buffer");
 
-	clReleaseMemObject(pos_buf);
-	clReleaseKernel(kernel);
 	clReleaseProgram(program);
-	clReleaseCommandQueue(queue);
 	clReleaseContext(context);
 
+	printf("CL init done!\n");
 }
+
+void CLRun(float particles[], int arr_len) {
+	clEnqueueWriteBuffer(queue, pos_buf, CL_FALSE, 0, arr_len * sizeof(cl_float), particles, 0, NULL, NULL);
+
+	size_t global_size = N;
+	err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_size, NULL, 0, NULL, NULL);
+	CheckErr(err, "Error executing kernel");
+
+	err = clFinish(queue);
+	CheckErr(err, "Error finishing queue");
+
+	err = clEnqueueReadBuffer(queue, pos_buf, CL_FALSE, 0, arr_len * sizeof(cl_float), particles, 0, NULL, NULL);
+	CheckErr(err, "Error reading buffer");
+}
+
+
+
+
+
+
 
 char* RdFstr(char* filename) {
 	FILE* fp;
@@ -143,7 +167,7 @@ void CheckArgErr(cl_kernel kernel, int arg_indx, cl_int err) {
 	}
 }
 
-
+/*
 #include <stdio.h>
 #include <stdlib.h>
 #include <CL/cl.h>
@@ -195,4 +219,4 @@ int main() {
 
 	// Step 7: Write the input data to the device
 	clEnqueueWriteBuffer(queue, input1, CL_TRUE, 0, sizeof(cl_int), &a, 0, NULL, NULL);
-	clEnqueueWriteBuffer(queue, input2, CL_TRUE, 0, sizeof(cl_int), &b, 0, NULL, NULL);
+	clEnqueueWriteBuffer(queue, input2, CL_TRUE, 0, sizeof(cl_int), &b, 0, NULL, NULL);*/

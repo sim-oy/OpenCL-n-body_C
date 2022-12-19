@@ -1,9 +1,5 @@
-__kernel void Calc(__global float particles[], __global float* G_p, __global float* smoothing_p, __global int* N_p){
+__kernel void Calc(__global float particles[], float G, float smoothing, int N){
 	int i = get_global_id(0);
-
-	float G = *G_p;
-	float smoothing = *smoothing_p;
-	float N = *N_p;
 
 	float xi = particles[i * 5], yi = particles[i * 5 + 1];
 	float sumX = 0, sumY = 0;

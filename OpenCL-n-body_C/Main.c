@@ -62,8 +62,7 @@ int main() {
         printf("Error opening to the file");
         return -1;
     }
-
-    CLInit(particles);
+    CLInit(particles, N * 5);
 
     while (sfRenderWindow_isOpen(window))
     {
@@ -83,7 +82,8 @@ int main() {
                 particles[i + 1]);
             }
         }
-
+        
+        CLRun(particles, N * 5);
         //CalculateSingleArray(particles);
         //CalculateSIMD(px, py, pvx, pvy, pm);
 
