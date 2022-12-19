@@ -8,6 +8,7 @@
 const float G = 0.00000001f;
 const float smoothing = 0.1f;
 
+
 void CalculateSingleArray(float particles[]) {
 	for (int i = 0; i < N; i++) {
 		float xi = particles[i * 5], yi = particles[i * 5 + 1];

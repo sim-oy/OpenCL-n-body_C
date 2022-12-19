@@ -33,7 +33,7 @@ int main() {
         }
     }
 
-    CLInit();
+    
     
 
     //char* windowBuffer = (char*)malloc(WINDOW_WIDTH * WINDOW_HEIGHT * 4 * sizeof(char));
@@ -63,6 +63,8 @@ int main() {
         return -1;
     }
 
+    CLInit(particles);
+
     while (sfRenderWindow_isOpen(window))
     {
         oa_tim_strt = clock();
@@ -82,7 +84,7 @@ int main() {
             }
         }
 
-        CalculateSingleArray(particles);
+        //CalculateSingleArray(particles);
         //CalculateSIMD(px, py, pvx, pvy, pm);
 
         memset(windowBuffer, 0, sizeof(windowBuffer));
