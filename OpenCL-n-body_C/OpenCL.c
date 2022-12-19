@@ -8,6 +8,7 @@
 
 void CheckErr(cl_int err, char* msg);
 void build_error_callback(cl_program program, void* user_data);
+void CheckArgErr(cl_kernel kernel, int arg_indx, cl_int err);
 
 void CLInit(float particles[]) {
 	cl_platform_id platform;
@@ -57,21 +58,13 @@ void CLInit(float particles[]) {
 	CheckErr(err, "Error creating kernel");
 
 	err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &pos_buf);
-	CheckErr(err, "Error setting argument 0");
+	CheckArgErr(kernel, 0, err);
 	err = clSetKernelArg(kernel, 1, sizeof(float), &G);
-	if (err != CL_SUCCESS) {
-		size_t log_size;
-		clGetKernelArgInfo(kernel, 1, CL_KERNEL_ARG_NAME, 0, NULL, &log_size);
-		char* log = malloc(log_size);
-		clGetKernelArgInfo(kernel, 1, CL_KERNEL_ARG_NAME, log_size, log, NULL);
-		printf("Argument name:\n%s\n", log);
-		free(log);
-	}
-	CheckErr(err, "Error setting argument 1");
+	CheckArgErr(kernel, 1, err);
 	err = clSetKernelArg(kernel, 2, sizeof(float), &smoothing);
-	CheckErr(err, "Error setting argument 2");
+	CheckArgErr(kernel, 2, err);
 	err = clSetKernelArg(kernel, 3, sizeof(int), (int*)N);
-	CheckErr(err, "Error setting argument 3");
+	CheckArgErr(kernel, 3, err);
 
 	size_t global_size = N;
 	err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_size, NULL, 0, NULL, NULL);
@@ -122,6 +115,27 @@ char* RdFstr(char* filename) {
 void CheckErr(cl_int err, char* msg) {
 	if (err != CL_SUCCESS) {
 		printf("%s: %d\n", msg, err);
+		exit(-1);
+	}
+}
+
+void CheckArgErr(cl_kernel kernel, int arg_indx, cl_int err) {
+	if (err != CL_SUCCESS) {
+		printf("Error setting argument %d: %d\n", arg_indx, err);
+
+		size_t log_size;
+		clGetKernelArgInfo(kernel, arg_indx, CL_KERNEL_ARG_TYPE_NAME, 0, NULL, &log_size);
+		char* log_t_name = malloc(log_size);
+		clGetKernelArgInfo(kernel, arg_indx, CL_KERNEL_ARG_TYPE_NAME, log_size, log_t_name, NULL);
+
+		clGetKernelArgInfo(kernel, arg_indx, CL_KERNEL_ARG_NAME, 0, NULL, &log_size);
+		char* log_name = malloc(log_size);
+		clGetKernelArgInfo(kernel, arg_indx, CL_KERNEL_ARG_NAME, log_size, log_name, NULL);
+
+		printf("Argument info:\n%s %s\n", log_t_name, log_name);
+		free(log_t_name);
+		free(log_name);
+
 		exit(-1);
 	}
 }
