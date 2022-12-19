@@ -11,43 +11,46 @@ void build_error_callback(cl_program program, void* user_data);
 void CheckArgErr(cl_kernel kernel, int arg_indx, cl_int err);
 
 void CLInit(float particles[]) {
-	cl_platform_id platform;
-	cl_device_id device;
-	cl_int err;
+	cl_int err = 0;
 
 	char* sourceName = "Kernel.cl";
-	
 	char* shader = RdFstr(sourceName);
 
 	//printf("%s\n", shader);
 
-	err = clGetPlatformIDs(1, &platform, NULL);
+	cl_uint num_platforms;
+	clGetPlatformIDs(0, NULL, &num_platforms);
+	cl_platform_id* platforms = (cl_platform_id*)malloc(num_platforms * sizeof(cl_platform_id));
+	clGetPlatformIDs(num_platforms, platforms, NULL);
 	CheckErr(err, "Error getting platform IDs");
 
-	err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL);
+	cl_uint num_devices;
+	clGetDeviceIDs(platforms[0], CL_DEVICE_TYPE_ALL, 0, NULL, &num_devices);
+	cl_device_id* devices = (cl_device_id*)malloc(num_devices * sizeof(cl_device_id));
+	clGetDeviceIDs(platforms[0], CL_DEVICE_TYPE_ALL, num_devices, devices, NULL);
 	CheckErr(err, "Error getting device IDs");
 
 	cl_context context;
 	cl_command_queue queue;
 
-	context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
+	context = clCreateContext(NULL, num_devices, devices, NULL, NULL, &err);
 	CheckErr(err, "Error creating context");
 
-	queue = clCreateCommandQueue(context, device, 0, &err);
+	queue = clCreateCommandQueue(context, devices[0], 0, &err);
 	CheckErr(err, "Error creating command queue");
 
 	cl_mem pos_buf = clCreateBuffer(context, CL_MEM_READ_WRITE, N * sizeof(float), NULL, &err);
 	CheckErr(err, "Error creating buffer");
 
 	cl_program program = clCreateProgramWithSource(context, 1, &shader, NULL, &err);
-	CheckErr(err, "Error creating buffer");
+	CheckErr(err, "Error creating program with source");
 
-	err = clBuildProgram(program, 1, &device, "-cl-std=CL3.0", NULL, NULL);
+	err = clBuildProgram(program, 1, &devices[0], "-cl-std=CL3.0", NULL, NULL);
 	if (err != CL_SUCCESS) {
 		size_t log_size;
-		clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+		clGetProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
 		char* log = malloc(log_size);
-		clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
+		clGetProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
 		printf("Build errors:\n%s\n", log);
 		free(log);
 	}
@@ -139,3 +142,57 @@ void CheckArgErr(cl_kernel kernel, int arg_indx, cl_int err) {
 		exit(-1);
 	}
 }
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <CL/cl.h>
+
+// OpenCL kernel to perform the calculation
+const char* kernel_source =
+"__kernel void calculation(__global int* a, __global int* b, __global int* c) {"
+"  int i = get_global_id(0);"
+"  c[i] = a[i] + b[i] * 2 - 3;"
+"}";
+
+int main() {
+	// Declare variables
+	int a = 5;
+	int b = 3;
+	int c;
+
+	// Step 1: Initialize the OpenCL environment
+	cl_uint num_platforms;
+	clGetPlatformIDs(0, NULL, &num_platforms);
+	cl_platform_id* platforms = (cl_platform_id*)malloc(num_platforms * sizeof(cl_platform_id));
+	clGetPlatformIDs(num_platforms, platforms, NULL);
+
+	cl_uint num_devices;
+	clGetDeviceIDs(platforms[0], CL_DEVICE_TYPE_ALL, 0, NULL, &num_devices);
+	cl_device_id* devices = (cl_device_id*)malloc(num_devices * sizeof(cl_device_id));
+	clGetDeviceIDs(platforms[0], CL_DEVICE_TYPE_ALL, num_devices, devices, NULL);
+
+	// Step 2: Create a context and command queue
+	cl_context context = clCreateContext(NULL, num_devices, devices, NULL, NULL, NULL);
+	cl_command_queue queue = clCreateCommandQueue(context, devices[0], 0, NULL);
+
+	// Step 3: Create memory buffers on the device
+	cl_int* input1 = (cl_int*)malloc(sizeof(cl_int));
+	cl_int* input2 = (cl_int*)malloc(sizeof(cl_int));
+	cl_int* output = (cl_int*)malloc(sizeof(cl_int));
+
+	// Step 4: Create and build the OpenCL program
+	cl_program program = clCreateProgramWithSource(context, 1, &kernel_source, NULL, NULL);
+	clBuildProgram(program, num_devices, devices, NULL, NULL, NULL);
+
+	// Step 5: Create the OpenCL kernel
+	cl_kernel kernel = clCreateKernel(program, "calculation", NULL);
+
+	// Step 6: Set the kernel arguments
+	clSetKernelArg(kernel, 0, sizeof(cl_mem), &input1);
+	clSetKernelArg(kernel, 1, sizeof(cl_mem), &input2);
+	clSetKernelArg(kernel, 2, sizeof(cl_mem), &output);
+
+	// Step 7: Write the input data to the device
+	clEnqueueWriteBuffer(queue, input1, CL_TRUE, 0, sizeof(cl_int), &a, 0, NULL, NULL);
+	clEnqueueWriteBuffer(queue, input2, CL_TRUE, 0, sizeof(cl_int), &b, 0, NULL, NULL);
