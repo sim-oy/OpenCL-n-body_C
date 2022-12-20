@@ -11,7 +11,7 @@ void build_error_callback(cl_program program, void* user_data);
 void CheckArgErr(cl_kernel kernel, int arg_indx, cl_int err);
 
 cl_command_queue queue;
-cl_kernel kernel;
+cl_kernel kernelCalc;
 cl_mem pos_buf;
 cl_int err;
 
@@ -59,23 +59,23 @@ void CLInit(float particles[], int arr_len) {
 		exit(-1);
 	}
 
-	kernel = clCreateKernel(program, "Calc", &err);
+	kernelCalc = clCreateKernel(program, "Calc", &err);
 	CheckErr(err, "Error creating kernel");
 
-	err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &pos_buf);
-	CheckArgErr(kernel, 0, err);
-	err = clSetKernelArg(kernel, 1, sizeof(cl_float), &G);
-	CheckArgErr(kernel, 1, err);
-	err = clSetKernelArg(kernel, 2, sizeof(cl_float), &smoothing);
-	CheckArgErr(kernel, 2, err);
+	err = clSetKernelArg(kernelCalc, 0, sizeof(cl_mem), &pos_buf);
+	CheckArgErr(kernelCalc, 0, err);
+	err = clSetKernelArg(kernelCalc, 1, sizeof(cl_float), &G);
+	CheckArgErr(kernelCalc, 1, err);
+	err = clSetKernelArg(kernelCalc, 2, sizeof(cl_float), &smoothing);
+	CheckArgErr(kernelCalc, 2, err);
 	int n = N;
-	err = clSetKernelArg(kernel, 3, sizeof(cl_int), &n);
-	CheckArgErr(kernel, 3, err);
+	err = clSetKernelArg(kernelCalc, 3, sizeof(cl_int), &n);
+	CheckArgErr(kernelCalc, 3, err);
 
 	clEnqueueWriteBuffer(queue, pos_buf, CL_FALSE, 0, arr_len * sizeof(cl_float), particles, 0, NULL, NULL);
 
 	size_t global_size = N;
-	err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_size, NULL, 0, NULL, NULL);
+	err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, NULL, 0, NULL, NULL);
 	CheckErr(err, "Error executing kernel");
 
 	err = clFinish(queue);
@@ -91,10 +91,9 @@ void CLInit(float particles[], int arr_len) {
 }
 
 void CLRun(float particles[], int arr_len) {
-	clEnqueueWriteBuffer(queue, pos_buf, CL_FALSE, 0, arr_len * sizeof(cl_float), particles, 0, NULL, NULL);
 
 	size_t global_size = N;
-	err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_size, NULL, 0, NULL, NULL);
+	err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, NULL, 0, NULL, NULL);
 	CheckErr(err, "Error executing kernel");
 
 	err = clFinish(queue);
@@ -103,9 +102,6 @@ void CLRun(float particles[], int arr_len) {
 	err = clEnqueueReadBuffer(queue, pos_buf, CL_FALSE, 0, arr_len * sizeof(cl_float), particles, 0, NULL, NULL);
 	CheckErr(err, "Error reading buffer");
 }
-
-
-
 
 
 

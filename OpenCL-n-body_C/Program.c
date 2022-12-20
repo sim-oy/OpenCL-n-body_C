@@ -5,7 +5,7 @@
 #include <immintrin.h>
 #include <omp.h>
 
-const float G = 0.0000000001f;
+const float G = 0.00000001f;
 const float smoothing = 0.01f;
 
 
@@ -29,6 +29,8 @@ void CalculateSingleArray(float particles[]) {
 		particles[i * 5 + 2] += sumX;
 		particles[i * 5 + 3] += sumY;
 		
+	}
+	for (int i = 0; i < N; i++) {
 		particles[i * 5] += particles[i * 5 + 2];
 		particles[i * 5 + 1] += particles[i * 5 + 3];
 	}
