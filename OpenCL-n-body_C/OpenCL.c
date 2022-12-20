@@ -9,6 +9,7 @@
 void CheckErr(cl_int err, char* msg);
 void build_error_callback(cl_program program, void* user_data);
 void CheckArgErr(cl_kernel kernel, int arg_indx, cl_int err);
+void PrintWorkGroupSizes(cl_device_id device, cl_kernel kernel);
 
 cl_command_queue queue;
 cl_kernel kernelCalc;
@@ -21,7 +22,7 @@ void CLInit(float particles[], int arr_len) {
 
 	char* sourceName = "Kernel.cl";
 	char* shader = RdFstr(sourceName);
-
+	
 	//printf("%s\n", shader);
 
 	cl_uint num_platforms;
@@ -57,7 +58,7 @@ void CLInit(float particles[], int arr_len) {
 		printf("Build errors:\n%s\n", log);
 		free(log);
 		printf("%Error building program: %d\n", err);
-		exit(-1);
+		exit(1);
 	}
 
 	kernelCalc = clCreateKernel(program, "Calc", &err);
@@ -65,16 +66,8 @@ void CLInit(float particles[], int arr_len) {
 	kernelMove = clCreateKernel(program, "Move", &err);
 	CheckErr(err, "Error creating kernel");
 
-	size_t preferred_work_group_size;
-	err = clGetKernelWorkGroupInfo(kernelCalc, devices[0], CL_KERNEL_WORK_GROUP_SIZE,
-		sizeof(preferred_work_group_size), &preferred_work_group_size, NULL);
-	CheckErr(err, "Error getting kernel CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE");
-	printf("Work group size: %zu\n", preferred_work_group_size);
-	err = clGetKernelWorkGroupInfo(kernelCalc, devices[0], CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
-		sizeof(preferred_work_group_size), &preferred_work_group_size, NULL);
-	CheckErr(err, "Error getting kernel CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE");
-	printf("Preferred work group size: %zu\n", preferred_work_group_size);
-	
+	PrintWorkGroupSizes(devices[0], kernelCalc);
+	PrintWorkGroupSizes(devices[0], kernelMove);
 
 
 	err = clSetKernelArg(kernelCalc, 0, sizeof(cl_mem), &pos_buf);
@@ -173,6 +166,18 @@ void CheckArgErr(cl_kernel kernel, int arg_indx, cl_int err) {
 
 		exit(-1);
 	}
+}
+
+void PrintWorkGroupSizes(cl_device_id device, cl_kernel kernel) {
+	size_t preferred_work_group_size;
+	err = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_WORK_GROUP_SIZE,
+		sizeof(preferred_work_group_size), &preferred_work_group_size, NULL);
+	CheckErr(err, "Error getting kernel CL_KERNEL_WORK_GROUP_SIZE");
+	printf("Work group size: %zu\n", preferred_work_group_size);
+	err = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
+		sizeof(preferred_work_group_size), &preferred_work_group_size, NULL);
+	CheckErr(err, "Error getting kernel CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE");
+	printf("Preferred work group size: %zu\n", preferred_work_group_size);
 }
 
 /*
