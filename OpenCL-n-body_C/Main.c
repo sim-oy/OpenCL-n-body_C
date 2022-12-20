@@ -11,13 +11,18 @@
 #include <time.h>
 #include <Cl/cl.h>
 
+void DrawTrackingCircle(sfRenderWindow* window, float particles[]);
+
 int main() {
 	printf("start\n");
     srand(0);
+
+    printf("N = %d\n", N);
     
     static float particles[N * 5];
     GenerateParticles(particles);
 
+    
     static float px[N_PAR][N / N_PAR],
                  py[N_PAR][N / N_PAR],
                  pvx[N_PAR][N / N_PAR],
@@ -62,7 +67,7 @@ int main() {
         printf("Error opening to the file");
         return -1;
     }
-    //CLInit(particles, N * 5);
+    CLInit(particles, N * 5);
 
     while (sfRenderWindow_isOpen(window))
     {
@@ -83,8 +88,8 @@ int main() {
             }
         }
         
-        //CLRun(particles, N * 5);
-        CalculateSingleArray(particles);
+        CLRun(particles, N * 5);
+        //CalculateSingleArray(particles);
         //CalculateSIMD(px, py, pvx, pvy, pm);
 
         memset(windowBuffer, 0, sizeof(windowBuffer));
@@ -93,6 +98,7 @@ int main() {
         sfTexture_updateFromPixels(Texture, windowBuffer, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0);
         sfSprite_setTexture(sprite, Texture, sfFalse);
         sfRenderWindow_drawSprite(window, sprite, NULL);
+        DrawTrackingCircle(window, particles);
 
         sfRenderWindow_display(window);
 
@@ -151,4 +157,16 @@ void GenerateParticles(float particles[]) {
         particles[i * 5 + 3] = 0;
         particles[i * 5 + 4] = randf();
     }
+}
+
+void DrawTrackingCircle(sfRenderWindow* window, float particles[]) {
+    
+    int x = (int)(particles[0] * WINDOW_WIDTH);
+    int y = (int)(particles[1] * WINDOW_HEIGHT);
+
+    sfCircleShape* circle = sfCircleShape_create();
+    sfCircleShape_setRadius(circle, 2.0f);
+    sfCircleShape_setPosition(circle, (sfVector2f) { x, y });
+    sfCircleShape_setFillColor(circle, sfRed);
+    sfRenderWindow_drawCircleShape(window, circle, NULL);
 }

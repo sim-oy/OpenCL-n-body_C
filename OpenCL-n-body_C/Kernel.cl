@@ -1,5 +1,4 @@
 
-
 __kernel void Calc(__global float particles[], float G, float smoothing, int N){
 	int i = get_global_id(0);
 
@@ -20,7 +19,10 @@ __kernel void Calc(__global float particles[], float G, float smoothing, int N){
 	}
 	particles[i * 5 + 2] += sumX;
 	particles[i * 5 + 3] += sumY;
+}
 
+__kernel void Move(__global float particles[]) {
+	int i = get_global_id(0);
 	particles[i * 5] += particles[i * 5 + 2];
 	particles[i * 5 + 1] += particles[i * 5 + 3];
 }

@@ -3,7 +3,7 @@
 
 #define randf() ((float)rand()/(float)(RAND_MAX))
 
-#define FRAMES_PER_PRINT 10
+#define FRAMES_PER_PRINT 300
 #define WINDOW_WIDTH 500
 #define WINDOW_HEIGHT 500
 #define WRITE_TO_FILE 0

@@ -12,6 +12,7 @@ void CheckArgErr(cl_kernel kernel, int arg_indx, cl_int err);
 
 cl_command_queue queue;
 cl_kernel kernelCalc;
+cl_kernel kernelMove;
 cl_mem pos_buf;
 cl_int err;
 
@@ -61,6 +62,20 @@ void CLInit(float particles[], int arr_len) {
 
 	kernelCalc = clCreateKernel(program, "Calc", &err);
 	CheckErr(err, "Error creating kernel");
+	kernelMove = clCreateKernel(program, "Move", &err);
+	CheckErr(err, "Error creating kernel");
+
+	size_t preferred_work_group_size;
+	err = clGetKernelWorkGroupInfo(kernelCalc, devices[0], CL_KERNEL_WORK_GROUP_SIZE,
+		sizeof(preferred_work_group_size), &preferred_work_group_size, NULL);
+	CheckErr(err, "Error getting kernel CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE");
+	printf("Work group size: %zu\n", preferred_work_group_size);
+	err = clGetKernelWorkGroupInfo(kernelCalc, devices[0], CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
+		sizeof(preferred_work_group_size), &preferred_work_group_size, NULL);
+	CheckErr(err, "Error getting kernel CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE");
+	printf("Preferred work group size: %zu\n", preferred_work_group_size);
+	
+
 
 	err = clSetKernelArg(kernelCalc, 0, sizeof(cl_mem), &pos_buf);
 	CheckArgErr(kernelCalc, 0, err);
@@ -72,17 +87,10 @@ void CLInit(float particles[], int arr_len) {
 	err = clSetKernelArg(kernelCalc, 3, sizeof(cl_int), &n);
 	CheckArgErr(kernelCalc, 3, err);
 
+	err = clSetKernelArg(kernelMove, 0, sizeof(cl_mem), &pos_buf);
+	CheckArgErr(kernelMove, 0, err);
+
 	clEnqueueWriteBuffer(queue, pos_buf, CL_FALSE, 0, arr_len * sizeof(cl_float), particles, 0, NULL, NULL);
-
-	size_t global_size = N;
-	err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, NULL, 0, NULL, NULL);
-	CheckErr(err, "Error executing kernel");
-
-	err = clFinish(queue);
-	CheckErr(err, "Error finishing queue");
-
-	err = clEnqueueReadBuffer(queue, pos_buf, CL_FALSE, 0, arr_len * sizeof(cl_float), particles, 0, NULL, NULL);
-	CheckErr(err, "Error reading buffer");
 
 	clReleaseProgram(program);
 	clReleaseContext(context);
@@ -93,14 +101,18 @@ void CLInit(float particles[], int arr_len) {
 void CLRun(float particles[], int arr_len) {
 
 	size_t global_size = N;
-	err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, NULL, 0, NULL, NULL);
+	size_t local_size = 256;
+	err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
 	CheckErr(err, "Error executing kernel");
 
-	err = clFinish(queue);
-	CheckErr(err, "Error finishing queue");
+	err = clEnqueueNDRangeKernel(queue, kernelMove, 1, NULL, &global_size, NULL, 0, NULL, NULL);
+	CheckErr(err, "Error executing kernel");
 
 	err = clEnqueueReadBuffer(queue, pos_buf, CL_FALSE, 0, arr_len * sizeof(cl_float), particles, 0, NULL, NULL);
 	CheckErr(err, "Error reading buffer");
+
+	err = clFinish(queue);
+	CheckErr(err, "Error finishing queue");
 }
 
 
