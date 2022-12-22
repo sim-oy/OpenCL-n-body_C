@@ -20,8 +20,8 @@ int main() {
     printf("N = %d\n", N);
     
     static float particles[N * 5];
+    GenerateParticlesSerial(particles);
     GenerateParticles(particles);
-
     
     static float px[N_PAR][N / N_PAR],
                  py[N_PAR][N / N_PAR],
@@ -37,7 +37,6 @@ int main() {
             pm[i][j] = randf();
         }
     }
-
     
     
 
@@ -94,6 +93,7 @@ int main() {
 
         memset(windowBuffer, 0, sizeof(windowBuffer));
         DrawParticles(particles, windowBuffer);
+        //DrawParticlesSerial(particles, windowBuffer);
         
         sfTexture_updateFromPixels(Texture, windowBuffer, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0);
         sfSprite_setTexture(sprite, Texture, sfFalse);
@@ -122,7 +122,7 @@ int main() {
     return 0;
 }
 
-void DrawParticles(float particles[], char windowBuffer[]) {
+void DrawParticlesSerial(float particles[], char windowBuffer[]) {
     int sum = 0;
     for (int i = 0; i < N * 5; i += 5) {
         if (particles[i] < 0 || particles[i] >= 1.0 || particles[i + 1] < 0 || particles[i + 1] >= 1.0) {
@@ -141,6 +141,25 @@ void DrawParticles(float particles[], char windowBuffer[]) {
     }
 }
 
+void DrawParticles(float particles[], char windowBuffer[]) {
+    int sum = 0;
+    for (int i = 0; i < N; i++) {
+        if (particles[i] < 0 || particles[i] >= 1.0 || particles[i + N] < 0 || particles[i + N] >= 1.0) {
+            continue;
+        }
+
+        int x = (int)(particles[i] * WINDOW_WIDTH);
+        int y = (int)(particles[i + N] * WINDOW_HEIGHT);
+
+        int index = (y * WINDOW_WIDTH + x) * 4;
+
+        windowBuffer[index] = 255;
+        windowBuffer[index + 1] = 255;
+        windowBuffer[index + 2] = 255;
+        windowBuffer[index + 3] = 255;
+    }
+}
+
 double DoubleArraySum(double array[], int len) {
     double sum = 0;
     for (int i = 0; i < len; i++) {
@@ -149,7 +168,7 @@ double DoubleArraySum(double array[], int len) {
     return sum;
 }
 
-void GenerateParticles(float particles[]) {
+void GenerateParticlesSerial(float particles[]) {
     for (int i = 0; i < N; i++) {
         particles[i * 5] = randf();
         particles[i * 5 + 1] = randf();
@@ -159,10 +178,21 @@ void GenerateParticles(float particles[]) {
     }
 }
 
+void GenerateParticles(float particles[]) {
+    for (int i = 0; i < N; i++) {
+        particles[i] = randf();
+        particles[i + N] = randf();
+        particles[i + N * 2] = 0;
+        particles[i + N * 3] = 0;
+        particles[i + N * 4] = randf();
+    }
+}
+
 void DrawTrackingCircle(sfRenderWindow* window, float particles[]) {
     
     int x = (int)(particles[0] * WINDOW_WIDTH);
-    int y = (int)(particles[1] * WINDOW_HEIGHT);
+    //int y = (int)(particles[1] * WINDOW_HEIGHT);
+    int y = (int)(particles[N] * WINDOW_HEIGHT);
 
     sfCircleShape* circle = sfCircleShape_create();
     sfCircleShape_setRadius(circle, 2.0f);

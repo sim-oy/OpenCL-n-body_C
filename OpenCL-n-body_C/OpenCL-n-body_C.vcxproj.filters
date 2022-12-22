@@ -48,5 +48,8 @@
     <None Include="Kernel.cl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="KernelStackedArr.cl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

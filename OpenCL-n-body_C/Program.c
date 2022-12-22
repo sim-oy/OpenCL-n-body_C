@@ -6,7 +6,7 @@
 #include <omp.h>
 
 const float G = 0.000000001f;
-const float smoothing = 0.1f;
+const float smoothing = 0.000001f;
 
 
 void CalculateSingleArray(float particles[]) {

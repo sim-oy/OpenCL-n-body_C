@@ -16,11 +16,12 @@ cl_kernel kernelCalc;
 cl_kernel kernelMove;
 cl_mem pos_buf;
 cl_int err;
+int n = N;
 
 
 void CLInit(float particles[], int arr_len) {
 
-	char* sourceName = "Kernel.cl";
+	char* sourceName = "KernelStackedArr.cl";
 	char* shader = RdFstr(sourceName);
 	
 	//printf("%s\n", shader);
@@ -76,12 +77,13 @@ void CLInit(float particles[], int arr_len) {
 	CheckArgErr(kernelCalc, 1, err);
 	err = clSetKernelArg(kernelCalc, 2, sizeof(cl_float), &smoothing);
 	CheckArgErr(kernelCalc, 2, err);
-	int n = N;
 	err = clSetKernelArg(kernelCalc, 3, sizeof(cl_int), &n);
 	CheckArgErr(kernelCalc, 3, err);
 
 	err = clSetKernelArg(kernelMove, 0, sizeof(cl_mem), &pos_buf);
 	CheckArgErr(kernelMove, 0, err);
+	err = clSetKernelArg(kernelMove, 1, sizeof(cl_int), &n);
+	CheckArgErr(kernelMove, 1, err);
 
 	clEnqueueWriteBuffer(queue, pos_buf, CL_FALSE, 0, arr_len * sizeof(cl_float), particles, 0, NULL, NULL);
 
@@ -94,8 +96,9 @@ void CLInit(float particles[], int arr_len) {
 void CLRun(float particles[], int arr_len) {
 
 	size_t global_size = N;
-	size_t local_size = 256;
+	size_t local_size = 64;
 	err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
+	//err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, NULL, 0, NULL, NULL);
 	CheckErr(err, "Error executing kernel");
 
 	err = clEnqueueNDRangeKernel(queue, kernelMove, 1, NULL, &global_size, NULL, 0, NULL, NULL);
