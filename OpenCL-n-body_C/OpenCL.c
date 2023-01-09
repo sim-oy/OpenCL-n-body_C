@@ -1,6 +1,5 @@
 #include "OpenCL.h"
 #include "Program.h"
-#include "GlobalSettings.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,10 +15,10 @@ cl_kernel kernelCalc;
 cl_kernel kernelMove;
 cl_mem pos_buf;
 cl_int err;
-int n = N;
 
 
-void CLInit(float particles[], int arr_len) {
+void CLInit(float particles[], int arr_len, float G, float smthing) {
+	int n = arr_len / 5;
 
 	char* sourceName = "KernelStackedArr.cl";
 	char* shader = RdFstr(sourceName);
@@ -75,7 +74,7 @@ void CLInit(float particles[], int arr_len) {
 	CheckArgErr(kernelCalc, 0, err);
 	err = clSetKernelArg(kernelCalc, 1, sizeof(cl_float), &G);
 	CheckArgErr(kernelCalc, 1, err);
-	err = clSetKernelArg(kernelCalc, 2, sizeof(cl_float), &smoothing);
+	err = clSetKernelArg(kernelCalc, 2, sizeof(cl_float), &smthing);
 	CheckArgErr(kernelCalc, 2, err);
 	err = clSetKernelArg(kernelCalc, 3, sizeof(cl_int), &n);
 	CheckArgErr(kernelCalc, 3, err);
@@ -94,8 +93,9 @@ void CLInit(float particles[], int arr_len) {
 }
 
 void CLRun(float particles[], int arr_len) {
+	int n = arr_len / 5;
 
-	size_t global_size = N;
+	size_t global_size = n;
 	size_t local_size = 64;
 	//err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
 	err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, NULL, 0, NULL, NULL);

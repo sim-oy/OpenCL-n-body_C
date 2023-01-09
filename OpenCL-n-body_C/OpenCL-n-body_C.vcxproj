@@ -143,7 +143,6 @@
     <ClCompile Include="Program.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GlobalSettings.h" />
     <ClInclude Include="Main.h" />
     <ClInclude Include="OpenCL.h" />
     <ClInclude Include="Program.h" />

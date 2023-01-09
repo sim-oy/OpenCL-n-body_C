@@ -32,9 +32,6 @@
     <ClInclude Include="Program.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GlobalSettings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="OpenCL.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -1,7 +1,6 @@
 #include "Main.h"
 #include "Program.h"
 #include "OpenCL.h"
-#include "GlobalSettings.h"
 #include <SFML/Graphics.h>
 #include <SFML/Window.h>
 #include <stdio.h>
@@ -14,19 +13,24 @@
 
 void DrawTrackingCircle(sfRenderWindow* window, float particles[]);
 
+#define N_PAR 1
+#define N2 1000
+#define rounding 256
+#define N (N2 % rounding == 0 ? N2 : (N2 - N2 % rounding) + rounding)
+
 int main() {
 	printf("start\n");
     srand(0);
 
     printf("N = %d\n", N);
 
-    const float G = 0.000000000000000001f;
+    const float G = 0.0000000001f;
     const float smthing = 0.00001f;
     
     static float particles[N * 5];
     //GenerateParticlesSerial(particles);
     GenerateParticles(particles);
-    ParticlesPreset8(particles);
+    //ParticlesPreset8(particles);
     
     static float px[N_PAR][N / N_PAR],
                  py[N_PAR][N / N_PAR],
@@ -93,7 +97,7 @@ int main() {
         }
         
         CLRun(particles, N * 5);
-        //CalculateSingleArray(particles);
+        //CalculateSingleArray(particles, N, G, smthing);
 
         memset(windowBuffer, 0, sizeof(windowBuffer));
         DrawParticles(particles, windowBuffer);
@@ -119,7 +123,7 @@ int main() {
             frames++;
         }
 
-        sleep(1000);
+        //sleep(1000);
     }
     fclose(file);
     sfRenderWindow_destroy(window);

@@ -2,7 +2,7 @@
 #define PROGRAM_H
 
 
-void CalculateSingleArray(float particles[]);
+void CalculateSingleArray(float particles[], int n, float G, float smthing);
 
 void ShiftArray(float arr[], int len);
 
