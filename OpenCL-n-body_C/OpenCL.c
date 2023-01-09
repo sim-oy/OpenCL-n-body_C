@@ -58,7 +58,7 @@ void CLInit(float particles[], int arr_len) {
 		clGetProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
 		printf("Build errors:\n%s\n", log);
 		free(log);
-		printf("%Error building program: %d\n", err);
+		printf("Error building program: %d\n", err);
 		exit(1);
 	}
 
@@ -97,8 +97,8 @@ void CLRun(float particles[], int arr_len) {
 
 	size_t global_size = N;
 	size_t local_size = 64;
-	err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
-	//err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, NULL, 0, NULL, NULL);
+	//err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
+	err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, NULL, 0, NULL, NULL);
 	CheckErr(err, "Error executing kernel");
 
 	err = clEnqueueNDRangeKernel(queue, kernelMove, 1, NULL, &global_size, NULL, 0, NULL, NULL);
@@ -146,7 +146,7 @@ char* RdFstr(char* filename) {
 void CheckErr(cl_int err, char* msg) {
 	if (err != CL_SUCCESS) {
 		printf("%s: %d\n", msg, err);
-		exit(-1);
+		exit(1);
 	}
 }
 
@@ -167,7 +167,7 @@ void CheckArgErr(cl_kernel kernel, int arg_indx, cl_int err) {
 		free(log_t_name);
 		free(log_name);
 
-		exit(-1);
+		exit(1);
 	}
 }
 

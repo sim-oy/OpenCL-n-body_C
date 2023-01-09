@@ -13,5 +13,6 @@ void DrawParticles(float particles[], char windowBuffer[]);
 double DoubleArraySum(double array[], int len);
 void GenerateParticlesSerial(float particles[]);
 void GenerateParticles(float particles[]);
+void ParticlesPreset8(float particles[]);
 
 #endif

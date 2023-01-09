@@ -1,4 +1,7 @@
 
+
+
+
 __kernel void Calc(__global float particles[], float G, float smoothing, int N){
 	int i = get_global_id(0);
 

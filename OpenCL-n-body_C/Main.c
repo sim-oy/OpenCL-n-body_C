@@ -9,6 +9,7 @@
 #include <string.h>
 #include <float.h>
 #include <time.h>
+#include <windows.h>
 #include <Cl/cl.h>
 
 void DrawTrackingCircle(sfRenderWindow* window, float particles[]);
@@ -20,8 +21,9 @@ int main() {
     printf("N = %d\n", N);
     
     static float particles[N * 5];
-    GenerateParticlesSerial(particles);
+    //GenerateParticlesSerial(particles);
     GenerateParticles(particles);
+    ParticlesPreset8(particles);
     
     static float px[N_PAR][N / N_PAR],
                  py[N_PAR][N / N_PAR],
@@ -89,7 +91,6 @@ int main() {
         
         CLRun(particles, N * 5);
         //CalculateSingleArray(particles);
-        //CalculateSIMD(px, py, pvx, pvy, pm);
 
         memset(windowBuffer, 0, sizeof(windowBuffer));
         DrawParticles(particles, windowBuffer);
@@ -114,6 +115,8 @@ int main() {
         else {
             frames++;
         }
+
+        sleep(1000);
     }
     fclose(file);
     sfRenderWindow_destroy(window);
@@ -199,4 +202,24 @@ void DrawTrackingCircle(sfRenderWindow* window, float particles[]) {
     sfCircleShape_setPosition(circle, (sfVector2f) { x, y });
     sfCircleShape_setFillColor(circle, sfRed);
     sfRenderWindow_drawCircleShape(window, circle, NULL);
+}
+
+void ParticlesPreset8(float particles[]) {
+    particles[0] = 0.97000436f + 0.5f;
+    particles[0 + N * 1] = -0.24308753f + 0.5f;
+    particles[0 + N * 2] = 0.93240737f * 2.0f;
+    particles[0 + N * 3] = -0.86473146f * 2.0f;
+    particles[0 + N * 4] = 1.0f;
+
+    particles[1] = -0.97000436f + 0.5f;
+    particles[1 + N * 1] = 0.24308753f + 0.5f;
+    particles[1 + N * 2] = 0.93240737f * 2.0f;
+    particles[1 + N * 3] = -0.86473146f * 2.0f;
+    particles[1 + N * 4] = 1.0f;
+
+    particles[2] = 0.0f + 0.5f;
+    particles[2 + N * 1] = 0.0f + 0.5f;
+    particles[2 + N * 2] = -0.93240737f;
+    particles[2 + N * 3] = 0.86473146f;
+    particles[2 + N * 4] = 1.0f;
 }
