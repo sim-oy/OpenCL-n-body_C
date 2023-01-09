@@ -19,6 +19,9 @@ int main() {
     srand(0);
 
     printf("N = %d\n", N);
+
+    const float G = 0.000000000000000001f;
+    const float smthing = 0.00001f;
     
     static float particles[N * 5];
     //GenerateParticlesSerial(particles);
@@ -68,7 +71,7 @@ int main() {
         printf("Error opening to the file");
         return -1;
     }
-    CLInit(particles, N * 5);
+    CLInit(particles, N * 5, G, smthing);
 
     while (sfRenderWindow_isOpen(window))
     {
