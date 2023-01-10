@@ -1,3 +1,16 @@
+/*
+void Zorder(int ind, int* x, int* y) {
+	int len = 0;
+	*x = 0, * y = 0;
+	while (ind != 0) {
+		*x += ((ind % 2) << len);
+		ind >>= 1;
+		*y += ((ind % 2) << len);
+		ind >>= 1;
+		len++;
+	}
+}*/
+
 
 __kernel void Calc(__global float particles[], float G, float smoothing, int N) {
 	int i = get_global_id(0);

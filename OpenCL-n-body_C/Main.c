@@ -20,6 +20,7 @@ void DrawTrackingCircle(sfRenderWindow* window, float particles[]);
 
 int main() {
 	printf("start\n");
+
     srand(0);
 
     printf("N = %d\n", N);
