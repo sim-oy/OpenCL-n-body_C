@@ -1,14 +1,5 @@
 #include "OpenCL.h"
-#include "Program.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <CL/cl.h>
 
-void CheckErr(cl_int err, char* msg);
-void build_error_callback(cl_program program, void* user_data);
-void CheckArgErr(cl_kernel kernel, int arg_indx, cl_int err);
-void PrintWorkGroupSizes(cl_device_id device, cl_kernel kernel);
 
 cl_command_queue queue;
 cl_kernel kernelCalc;
@@ -17,10 +8,10 @@ cl_mem pos_buf;
 cl_int err;
 
 
-void CLInit(float particles[], int arr_len, float G, float smthing) {
+void CLInit(particle particles[], int arr_len, float G, float smthing) {
 	int n = arr_len / 5;
 
-	char* sourceName = "KernelStackedArr.cl";
+	char* sourceName = "Kernel.cl";
 	char* shader = RdFstr(sourceName);
 	
 	//printf("%s\n", shader);
@@ -92,7 +83,7 @@ void CLInit(float particles[], int arr_len, float G, float smthing) {
 	printf("CL init done!\n");
 }
 
-void CLRun(float particles[], int arr_len) {
+void CLRun(particle particles[], int arr_len) {
 	int n = arr_len / 5;
 
 	size_t global_size = n;

@@ -138,11 +138,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Environment.c" />
     <ClCompile Include="Main.c" />
     <ClCompile Include="OpenCL.c" />
     <ClCompile Include="Program.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Environment.h" />
     <ClInclude Include="Main.h" />
     <ClInclude Include="OpenCL.h" />
     <ClInclude Include="Program.h" />

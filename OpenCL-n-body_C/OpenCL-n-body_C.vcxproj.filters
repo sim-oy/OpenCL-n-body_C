@@ -24,6 +24,9 @@
     <ClCompile Include="OpenCL.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Environment.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
@@ -33,6 +36,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OpenCL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Environment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

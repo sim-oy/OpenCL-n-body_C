@@ -28,31 +28,39 @@ __kernel void Calc(__global float particles[], float G, float smoothing, int N) 
 	particles[i * 5 + 3] += distanceY * b;
 }*/
 
+typedef struct {
+	float x;
+	float y;
+	float vx;
+	float vy;
+	float mss;
+} particle;
 
-__kernel void Calc(__global float particles[], float G, float smoothing, int N) {
-	int i = get_global	_id(0);
 
-	float xi = particles[i * 5], yi = particles[i * 5 + 1];
+__kernel void Calc(__global particle particles[], float G, float smoothing, int N) {
+	int i = get_global_id(0);
+
+	float xi = particles[i].x, yi = particles[i].y;
 	float sumX = 0, sumY = 0;
 	for (int j = 0; j < N; j++)
 	{
-		float distanceX = particles[j * 5] - xi;
-		float distanceY = particles[j * 5 + 1] - yi;
+		float distanceX = particles[j].x - xi;
+		float distanceY = particles[j].y - yi;
 
 		float x2_y2 = distanceX * distanceX + distanceY * distanceY;
 		float dist = (float)sqrt(x2_y2 * x2_y2 * x2_y2);
 
-		float b = G * particles[j * 5 + 4] / (dist + smoothing);
+		float b = G * particles[j].mss / (dist + smoothing);
 
 		sumX += distanceX * b;
 		sumY += distanceY * b;
 	}
-	particles[i * 5 + 2] += sumX;
-	particles[i * 5 + 3] += sumY;
+	particles[i].vx += sumX;
+	particles[i].vy += sumY;
 }
 
-__kernel void Move(__global float particles[], int N) {
+__kernel void Move(__global particle particles[], int N) {
 	int i = get_global_id(0);
-	particles[i * 5] += particles[i * 5 + 2];
-	particles[i * 5 + 1] += particles[i * 5 + 3];
+	particles[i].x += particles[i].vx;
+	particles[i].y += particles[i].vy;
 }

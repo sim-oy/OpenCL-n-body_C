@@ -1,22 +1,17 @@
 #include "Main.h"
-#include "Program.h"
-#include "OpenCL.h"
-#include <SFML/Graphics.h>
-#include <SFML/Window.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <float.h>
-#include <time.h>
-#include <windows.h>
-#include <Cl/cl.h>
-
-void DrawTrackingCircle(sfRenderWindow* window, float particles[]);
 
 #define N_PAR 1
 #define N2 1000
 #define rounding 256
 #define N (N2 % rounding == 0 ? N2 : (N2 - N2 % rounding) + rounding)
+
+struct __attribute__((__packed__)) particle {
+    float x;
+    float y;
+    float vx;
+    float vy;
+    float mss;
+};
 
 int main() {
 	printf("start\n");
@@ -25,14 +20,14 @@ int main() {
 
     printf("N = %d\n", N);
 
-    const float G = 0.0000000001f;
+    const float G = 0.000000001f;
     const float smthing = 0.00001f;
     
-    static float particles[N * 5];
-    //GenerateParticlesSerial(particles);
-    GenerateParticles(particles);
-    //ParticlesPreset8(particles);
-    
+    //static float particles[N * 5];
+    static particle particles[N * 5];
+    GenerateParticles(particles, N);
+    //ParticlesPreset8(particles, N);
+
     static float px[N_PAR][N / N_PAR],
                  py[N_PAR][N / N_PAR],
                  pvx[N_PAR][N / N_PAR],
@@ -47,7 +42,6 @@ int main() {
             pm[i][j] = randf();
         }
     }
-    
     
 
     //char* windowBuffer = (char*)malloc(WINDOW_WIDTH * WINDOW_HEIGHT * 4 * sizeof(char));
@@ -152,7 +146,7 @@ void DrawParticlesSerial(float particles[], char windowBuffer[]) {
     }
 }
 
-void DrawParticles(float particles[], char windowBuffer[]) {
+void DrawParticles2(float particles[], char windowBuffer[]) {
     int sum = 0;
     for (int i = 0; i < N; i++) {
         if (particles[i] < 0 || particles[i] >= 1.0 || particles[i + N] < 0 || particles[i + N] >= 1.0) {
@@ -171,6 +165,25 @@ void DrawParticles(float particles[], char windowBuffer[]) {
     }
 }
 
+void DrawParticles(particle particles[], char windowBuffer[]) {
+    int sum = 0;
+    for (int i = 0; i < N; i++) {
+        if (particles[i].x < 0 || particles[i].x >= 1.0 || particles[i].y < 0 || particles[i].y >= 1.0) {
+            continue;
+        }
+
+        int x = (int)(particles[i].x * WINDOW_WIDTH);
+        int y = (int)(particles[i].y * WINDOW_HEIGHT);
+
+        int index = (y * WINDOW_WIDTH + x) * 4;
+
+        windowBuffer[index] = 255;
+        windowBuffer[index + 1] = 255;
+        windowBuffer[index + 2] = 255;
+        windowBuffer[index + 3] = 255;
+    }
+}
+
 double DoubleArraySum(double array[], int len) {
     double sum = 0;
     for (int i = 0; i < len; i++) {
@@ -179,55 +192,16 @@ double DoubleArraySum(double array[], int len) {
     return sum;
 }
 
-void GenerateParticlesSerial(float particles[]) {
-    for (int i = 0; i < N; i++) {
-        particles[i * 5] = randf();
-        particles[i * 5 + 1] = randf();
-        particles[i * 5 + 2] = 0;
-        particles[i * 5 + 3] = 0;
-        particles[i * 5 + 4] = randf();
-    }
-}
 
-void GenerateParticles(float particles[]) {
-    for (int i = 0; i < N; i++) {
-        particles[i] = randf();
-        particles[i + N] = randf();
-        particles[i + N * 2] = 0;
-        particles[i + N * 3] = 0;
-        particles[i + N * 4] = randf();
-    }
-}
-
-void DrawTrackingCircle(sfRenderWindow* window, float particles[]) {
+void DrawTrackingCircle(sfRenderWindow* window, particle particles[]) {
     
-    int x = (int)(particles[0] * WINDOW_WIDTH);
+    int x = (int)(particles[0].x * WINDOW_WIDTH);
     //int y = (int)(particles[1] * WINDOW_HEIGHT);
-    int y = (int)(particles[N] * WINDOW_HEIGHT);
+    int y = (int)(particles[0].y * WINDOW_HEIGHT);
 
     sfCircleShape* circle = sfCircleShape_create();
     sfCircleShape_setRadius(circle, 2.0f);
     sfCircleShape_setPosition(circle, (sfVector2f) { x, y });
     sfCircleShape_setFillColor(circle, sfRed);
     sfRenderWindow_drawCircleShape(window, circle, NULL);
-}
-
-void ParticlesPreset8(float particles[]) {
-    particles[0] = 0.97000436f + 0.5f;
-    particles[0 + N * 1] = -0.24308753f + 0.5f;
-    particles[0 + N * 2] = 0.93240737f * 2.0f;
-    particles[0 + N * 3] = -0.86473146f * 2.0f;
-    particles[0 + N * 4] = 1.0f;
-
-    particles[1] = -0.97000436f + 0.5f;
-    particles[1 + N * 1] = 0.24308753f + 0.5f;
-    particles[1 + N * 2] = 0.93240737f * 2.0f;
-    particles[1 + N * 3] = -0.86473146f * 2.0f;
-    particles[1 + N * 4] = 1.0f;
-
-    particles[2] = 0.0f + 0.5f;
-    particles[2 + N * 1] = 0.0f + 0.5f;
-    particles[2 + N * 2] = -0.93240737f;
-    particles[2 + N * 3] = 0.86473146f;
-    particles[2 + N * 4] = 1.0f;
 }
