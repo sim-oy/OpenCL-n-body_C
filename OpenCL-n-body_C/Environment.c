@@ -1,16 +1,5 @@
 #include "Environment.h"
 
-
-struct particle {
-    float x;
-    float y;
-    float vx;
-    float vy;
-    float mss;
-};
-
-
-
 void GenerateParticles2(float particles[], int N) {
     for (int i = 0; i < N; i++) {
         particles[i] = randf();

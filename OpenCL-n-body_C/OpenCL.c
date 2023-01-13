@@ -88,8 +88,8 @@ void CLRun(particle particles[], int arr_len) {
 
 	size_t global_size = n;
 	size_t local_size = 64;
-	//err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
-	err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, NULL, 0, NULL, NULL);
+	err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
+	//err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, NULL, 0, NULL, NULL);
 	CheckErr(err, "Error executing kernel");
 
 	err = clEnqueueNDRangeKernel(queue, kernelMove, 1, NULL, &global_size, NULL, 0, NULL, NULL);

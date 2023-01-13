@@ -1,17 +1,9 @@
 #include "Main.h"
 
 #define N_PAR 1
-#define N2 1000
+#define N2 100000
 #define rounding 256
 #define N (N2 % rounding == 0 ? N2 : (N2 - N2 % rounding) + rounding)
-
-struct __attribute__((__packed__)) particle {
-    float x;
-    float y;
-    float vx;
-    float vy;
-    float mss;
-};
 
 int main() {
 	printf("start\n");
@@ -24,7 +16,8 @@ int main() {
     const float smthing = 0.00001f;
     
     //static float particles[N * 5];
-    static particle particles[N * 5];
+    static particle particles[N];
+
     GenerateParticles(particles, N);
     //ParticlesPreset8(particles, N);
 
@@ -101,7 +94,7 @@ int main() {
         sfTexture_updateFromPixels(Texture, windowBuffer, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0);
         sfSprite_setTexture(sprite, Texture, sfFalse);
         sfRenderWindow_drawSprite(window, sprite, NULL);
-        DrawTrackingCircle(window, particles);
+        //DrawTrackingCircle(window, particles);
 
         sfRenderWindow_display(window);
 

@@ -2,7 +2,6 @@
 #define OPENCL_H
 
 #include "Environment.h"
-#include "Program.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

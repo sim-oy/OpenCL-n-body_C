@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#pragma pack(4)
 typedef struct {
     float x;
     float y;
@@ -11,6 +12,7 @@ typedef struct {
     float vy;
     float mss;
 } particle;
+#pragma pack()
 
 #define randf() ((float)rand()/(float)(RAND_MAX))
 

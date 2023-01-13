@@ -14,7 +14,7 @@
 #include <windows.h>
 #include <Cl/cl.h>
 
-#define FRAMES_PER_PRINT 1000
+#define FRAMES_PER_PRINT 100
 #define WINDOW_WIDTH 500
 #define WINDOW_HEIGHT 500
 #define WRITE_TO_FILE 0
