@@ -1,5 +1,44 @@
 #include "Program.h"
 
+/*
+void CalculateSIMD(float px[N_PAR][N / N_PAR], float py[N_PAR][N / N_PAR], float pvx[N_PAR][N / N_PAR], float pvy[N_PAR][N / N_PAR], float pm[N_PAR][N / N_PAR]) {
+	__m128 vG = _mm_set_ps1(G);
+	__m128 vsmoothing = _mm_set_ps1(smoothing);
+	for (int i = 0; i < N_PAR; i++) {
+		__m128 sumX = _mm_setzero_ps(), sumY = _mm_setzero_ps();
+		for (int j = 0; j < N / N_PAR; j++)
+		{
+			__m128 distanceX = _mm_sub_ps(_mm_load_ps(px[i]), _mm_load_ps(py[i]));
+			__m128 distanceY = _mm_sub_ps(_mm_load_ps(py[i]), _mm_load_ps(py[i]));
+
+			__m128 distanceXY = _mm_mul_ps(distanceX, distanceY);
+			__m128 x2_y2 = _mm_add_ps(distanceXY, distanceXY);
+
+			__m128 dist = _mm_sqrt_ps(_mm_mul_ps(_mm_mul_ps(x2_y2, x2_y2), x2_y2));
+
+			__m128 b = _mm_div_ps(_mm_mul_ps(vG, _mm_load_ps(pm[i])), _mm_add_ps(dist, vsmoothing));
+
+			sumX = _mm_add_ps(sumX, _mm_mul_ps(distanceX, b));
+			sumY = _mm_add_ps(sumX, _mm_mul_ps(distanceY, b));
+
+			ShiftArray(px[i], N);
+			ShiftArray(py[i], N);
+			ShiftArray(pvx[i], N);
+			ShiftArray(pvy[i], N);
+			ShiftArray(pm[i], N);
+		}
+		__m128 new_pvx = _mm_add_ps(_mm_load_ps(pvx[i]), sumX);
+		_mm_store_ps(pvx[i], new_pvx);
+		__m128 new_pvy = _mm_add_ps(_mm_load_ps(pvy[i]), sumY);
+		_mm_store_ps(pvy[i], new_pvy);
+
+		__m128 new_px = _mm_add_ps(_mm_load_ps(px[i]), new_pvx);
+		_mm_store_ps(px[i], new_px);
+		__m128 new_py = _mm_add_ps(_mm_load_ps(py[i]), new_pvy);
+		_mm_store_ps(py[i], new_py);
+	}
+}*/
+
 
 void CalculateSingleArray2(float particles[], int N, float G, float smthing) {
 	for (int i = 0; i < N; i++) {

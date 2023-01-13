@@ -23,6 +23,7 @@
 void DrawParticlesSerial(float particles[], char windowBuffer[]);
 void DrawParticles2(float particles[], char windowBuffer[]);
 void DrawParticles(particle particles[], char windowBuffer[]);
+void DrawParticles8(particle8 particles[], char windowBuffer[]);
 void DrawTrackingCircle(sfRenderWindow* window, float particles[]);
 
 double DoubleArraySum(double array[], int len);

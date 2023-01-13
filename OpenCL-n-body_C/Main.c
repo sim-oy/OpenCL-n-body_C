@@ -1,7 +1,7 @@
 #include "Main.h"
 
-#define N_PAR 1
-#define N2 100000
+#define N_PAR 8
+#define N2 1000
 #define rounding 256
 #define N (N2 % rounding == 0 ? N2 : (N2 - N2 % rounding) + rounding)
 
@@ -16,25 +16,12 @@ int main() {
     const float smthing = 0.00001f;
     
     //static float particles[N * 5];
-    static particle particles[N];
+    //static particle particles[N];
+    static particle8 particles[N / N_PAR];
 
-    GenerateParticles(particles, N);
+    //GenerateParticles(particles, N);
+    GenerateParticles8(particles, N, N_PAR);
     //ParticlesPreset8(particles, N);
-
-    static float px[N_PAR][N / N_PAR],
-                 py[N_PAR][N / N_PAR],
-                 pvx[N_PAR][N / N_PAR],
-                 pvy[N_PAR][N / N_PAR],
-                 pm[N_PAR][N / N_PAR];
-    for (int i = 0; i < N_PAR; i++) {
-        for (int j = 0; j < N / N_PAR; j++) {
-            px[i][j] = randf();
-            py[i][j] = randf();
-            pvx[i][j] = 0;
-            pvy[i][j] = 0;
-            pm[i][j] = randf();
-        }
-    }
     
 
     //char* windowBuffer = (char*)malloc(WINDOW_WIDTH * WINDOW_HEIGHT * 4 * sizeof(char));
@@ -63,7 +50,7 @@ int main() {
         printf("Error opening to the file");
         return -1;
     }
-    CLInit(particles, N * 5, G, smthing);
+    CLInit(particles, N * 5, N_PAR, G, smthing);
 
     while (sfRenderWindow_isOpen(window))
     {
@@ -84,11 +71,12 @@ int main() {
             }
         }
         
-        CLRun(particles, N * 5);
+        CLRun(particles, N * 5, N_PAR);
         //CalculateSingleArray(particles, N, G, smthing);
 
         memset(windowBuffer, 0, sizeof(windowBuffer));
-        DrawParticles(particles, windowBuffer);
+        //DrawParticles(particles, windowBuffer);
+        DrawParticles8(particles, windowBuffer);
         //DrawParticlesSerial(particles, windowBuffer);
         
         sfTexture_updateFromPixels(Texture, windowBuffer, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0);
@@ -176,6 +164,28 @@ void DrawParticles(particle particles[], char windowBuffer[]) {
         windowBuffer[index + 3] = 255;
     }
 }
+
+void DrawParticles8(particle8 particles[], char windowBuffer[]) {
+    for (int i = 0; i < N / N_PAR; i++) {
+        for (int k = 0; k < N_PAR; k++) {
+            if (particles[i].x[k] < 0 || particles[i].x[k] >= 1.0 || particles[i].y[k] < 0 || particles[i].y[k] >= 1.0) {
+                continue;
+            }
+
+            int x = (int)(particles[i].x[k] * WINDOW_WIDTH);
+            int y = (int)(particles[i].y[k] * WINDOW_HEIGHT);
+
+            int index = (y * WINDOW_WIDTH + x) * 4;
+
+            windowBuffer[index] = 255;
+            windowBuffer[index + 1] = 255;
+            windowBuffer[index + 2] = 255;
+            windowBuffer[index + 3] = 255;
+
+        }
+    }
+}
+
 
 double DoubleArraySum(double array[], int len) {
     double sum = 0;

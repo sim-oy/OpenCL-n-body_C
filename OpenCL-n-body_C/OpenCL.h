@@ -7,8 +7,8 @@
 #include <string.h>
 #include <CL/cl.h>
 
-void CLInit(float particles[], int arr_len, float G, float smthing);
-void CLRun(float particles[], int arr_len);
+void CLInit(particle8 particles[], int arr_len, int n_par, float G, float smthing);
+void CLRun(particle8 particles[], int arr_len, int n_par);
 char* RdFstr(char* filename);
 
 void CheckErr(cl_int err, char* msg);
