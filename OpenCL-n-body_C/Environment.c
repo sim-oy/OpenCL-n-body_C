@@ -9,7 +9,7 @@ void GenerateParticles2(float particles[], int N) {
         particles[i + N * 4] = randf();
     }
 }
-/*
+
 void GenerateParticles(particle particles[], int N) {
     for (int i = 0; i < N; i++) {
         particles[i].x = randf();
@@ -19,7 +19,7 @@ void GenerateParticles(particle particles[], int N) {
         particles[i].mss = randf();
     }
 }
-*/
+
 void ParticlesPreset8(float particles[], int N) {
     particles[0] = 0.97000436f + 0.5f;
     particles[0 + N * 1] = -0.24308753f + 0.5f;
@@ -38,16 +38,4 @@ void ParticlesPreset8(float particles[], int N) {
     particles[2 + N * 2] = -0.93240737f;
     particles[2 + N * 3] = 0.86473146f;
     particles[2 + N * 4] = 1.0f;
-}
-
-void GenerateParticles8(particle8 particles[], int N, int N_PAR) {
-    for (int i = 0; i < N / N_PAR; i++) {
-        for (int j = 0; j < N_PAR; j++) {
-            particles[i].x[j] = randf();
-            particles[i].y[j] = randf();
-            particles[i].vx[j] = 0;
-            particles[i].vy[j] = 0;
-            particles[i].mss[j] = randf();
-        }
-    }
 }

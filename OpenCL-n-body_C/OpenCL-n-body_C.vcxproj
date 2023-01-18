@@ -155,7 +155,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Kernel.cl" />
-    <None Include="Kernel8.cl" />
     <None Include="KernelStackedArr.cl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

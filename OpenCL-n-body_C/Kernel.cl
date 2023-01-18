@@ -48,15 +48,15 @@ __kernel void Calc(__global particle particles[], float G, float smoothing, int 
 		float distanceY = particles[j].y - yi;
 
 		float x2_y2 = distanceX * distanceX + distanceY * distanceY;
-		float dist = (float)sqrt(x2_y2 * x2_y2 * x2_y2);
+		float dist = sqrt(x2_y2 * x2_y2 * x2_y2 + smoothing);
 
-		float b = G * particles[j].mss / (dist + smoothing);
+		float b = particles[j].mss / (dist);
 
 		sumX += distanceX * b;
 		sumY += distanceY * b;
 	}
-	particles[i].vx += sumX;
-	particles[i].vy += sumY;
+	particles[i].vx += sumX * G;
+	particles[i].vy += sumY * G;
 }
 
 __kernel void Move(__global particle particles[], int N) {

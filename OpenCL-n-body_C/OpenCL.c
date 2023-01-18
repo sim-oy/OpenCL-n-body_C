@@ -8,10 +8,10 @@ cl_mem pos_buf;
 cl_int err;
 
 
-void CLInit(particle8 particles[], int arr_len, int n_par, float G, float smthing) {
+void CLInit(particle particles[], int arr_len, float G, float smthing) {
 	int n = arr_len / 5;
 
-	char* sourceName = "Kernel8.cl";
+	char* sourceName = "Kernel.cl";
 	char* shader = RdFstr(sourceName);
 	
 	//printf("%s\n", shader);
@@ -34,7 +34,7 @@ void CLInit(particle8 particles[], int arr_len, int n_par, float G, float smthin
 	queue = clCreateCommandQueue(context, devices[0], 0, &err);
 	CheckErr(err, "Error creating command queue");
 
-	pos_buf = clCreateBuffer(context, CL_MEM_READ_WRITE, arr_len / n_par * sizeof(cl_float8), NULL, &err);
+	pos_buf = clCreateBuffer(context, CL_MEM_READ_WRITE, arr_len * sizeof(cl_float), NULL, &err);
 	CheckErr(err, "Error creating buffer");
 
 	cl_program program = clCreateProgramWithSource(context, 1, &shader, NULL, &err);
@@ -75,7 +75,7 @@ void CLInit(particle8 particles[], int arr_len, int n_par, float G, float smthin
 	err = clSetKernelArg(kernelMove, 1, sizeof(cl_int), &n);
 	CheckArgErr(kernelMove, 1, err);
 
-	clEnqueueWriteBuffer(queue, pos_buf, CL_FALSE, 0, arr_len / n_par * sizeof(cl_float8), particles, 0, NULL, NULL);
+	clEnqueueWriteBuffer(queue, pos_buf, CL_FALSE, 0, arr_len * sizeof(cl_float), particles, 0, NULL, NULL);
 
 	clReleaseProgram(program);
 	clReleaseContext(context);
@@ -83,7 +83,7 @@ void CLInit(particle8 particles[], int arr_len, int n_par, float G, float smthin
 	printf("CL init done!\n");
 }
 
-void CLRun(particle8 particles[], int arr_len, int n_par) {
+void CLRun(particle particles[], int arr_len) {
 	int n = arr_len / 5;
 
 	size_t global_size = n;
@@ -95,7 +95,7 @@ void CLRun(particle8 particles[], int arr_len, int n_par) {
 	err = clEnqueueNDRangeKernel(queue, kernelMove, 1, NULL, &global_size, NULL, 0, NULL, NULL);
 	CheckErr(err, "Error executing kernel");
 
-	err = clEnqueueReadBuffer(queue, pos_buf, CL_FALSE, 0, arr_len / n_par * sizeof(cl_float8), particles, 0, NULL, NULL);
+	err = clEnqueueReadBuffer(queue, pos_buf, CL_FALSE, 0, arr_len * sizeof(cl_float), particles, 0, NULL, NULL);
 	CheckErr(err, "Error reading buffer");
 
 	err = clFinish(queue);
