@@ -1,7 +1,7 @@
 #include "Main.h"
 
 #define N_PAR 1
-#define N2 10000
+#define N2 16000
 #define rounding 256
 #define N (N2 % rounding == 0 ? N2 : (N2 - N2 % rounding) + rounding)
 
@@ -13,7 +13,7 @@ int main() {
     printf("N = %d\n", N);
 
     const float G = 0.000000001f;
-    const float smthing = 0.01f;
+    const float smthing = 0.0000000001f;
     
     //static float particles[N * 5];
     static particle particles[N];
@@ -69,7 +69,7 @@ int main() {
         }
         
         CLRun(particles, N * 5);
-        //CalculateSingleArray3(particles, N, G, smthing);
+        //CalculateSingleArray(particles, N, G, smthing);
 
         memset(windowBuffer, 0, sizeof(windowBuffer));
         DrawParticles(particles, windowBuffer);

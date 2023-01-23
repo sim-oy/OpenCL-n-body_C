@@ -10,23 +10,6 @@ void Zorder(int ind, int* x, int* y) {
 		len++;
 	}
 }
-/*
-__kernel void Calc(__global float particles[], float G, float smoothing, int N) {
-	int i = get_global_id(0);
-	int x, y;
-	Zorder(i, &x, &y);
-
-	float distanceX = particles[j * 5] - xi;
-	float distanceY = particles[j * 5 + 1] - yi;
-
-	float x2_y2 = distanceX * distanceX + distanceY * distanceY;
-	float dist = (float)sqrt(x2_y2 * x2_y2 * x2_y2);
-
-	float b = G * particles[j * 5 + 4] / (dist + smoothing);
-
-	particles[i * 5 + 2] += distanceX * b;
-	particles[i * 5 + 3] += distanceY * b;
-}*/
 
 typedef struct {
 	float x;
@@ -35,7 +18,6 @@ typedef struct {
 	float vy;
 	float mss;
 } particle;
-
 
 __kernel void Calc(__global particle particles[], float G, float smoothing, int N) {
 	int i = get_global_id(0);
@@ -48,9 +30,12 @@ __kernel void Calc(__global particle particles[], float G, float smoothing, int 
 		float distanceY = particles[j].y - yi;
 
 		float x2_y2 = distanceX * distanceX + distanceY * distanceY;
-		float dist = sqrt(x2_y2 * x2_y2 * x2_y2 + smoothing);
 
-		float b = particles[j].mss / (dist);
+		//float dist = sqrt(x2_y2 * x2_y2 * x2_y2);
+		//float b = particles[j].mss / (dist + smoothing);
+
+		float dist = rsqrt(x2_y2 * x2_y2 * x2_y2 + smoothing);
+		float b = particles[j].mss * dist;
 
 		sumX += distanceX * b;
 		sumY += distanceY * b;

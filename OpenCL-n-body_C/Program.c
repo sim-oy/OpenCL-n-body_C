@@ -11,9 +11,9 @@ void CalculateSingleArray2(float particles[], int N, float G, float smthing) {
 			float distanceY = particles[j + N] - yi;
 
 			float x2_y2 = distanceX * distanceX + distanceY * distanceY;
-			float dist = (float)sqrt(x2_y2 * x2_y2 * x2_y2);
+			float dist = sqrtf(x2_y2 * x2_y2 * x2_y2 + smthing);
 
-			float b = G * particles[j + N * 4] / (dist + smthing);
+			float b = G * particles[j + N * 4] / (dist);
 
 			sumX += distanceX * b;
 			sumY += distanceY * b;
@@ -38,9 +38,9 @@ void CalculateSingleArray(particle particles[], int n, float G, float smthing) {
 			float distanceY = particles[j].y - yi;
 
 			float x2_y2 = distanceX * distanceX + distanceY * distanceY;
-			float dist = sqrtf(x2_y2 * x2_y2 * x2_y2);
+			float dist = sqrtf(x2_y2 * x2_y2 * x2_y2 + smthing);
 
-			float b = particles[j].mss / (dist + smthing);
+			float b = particles[j].mss / (dist);
 
 			sumX += distanceX * b;
 			sumY += distanceY * b;
@@ -74,7 +74,7 @@ void CalculateSingleArray3(particle particles[], int n, float G, float smthing) 
 			sumX += bx;
 			sumY += by;
 		}
-x		particles[i].vx += sumX * G;
+		particles[i].vx += sumX * G;
 		particles[i].vy += sumY * G;
 
 	}
