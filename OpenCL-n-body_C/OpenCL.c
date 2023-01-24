@@ -86,7 +86,7 @@ void CLInit(particle particles[], int arr_len, float G, float smthing) {
 void CLRun(particle particles[], int arr_len) {
 	int n = arr_len / 5;
 
-	size_t global_size[2] = {n , 1};
+	size_t global_size[2] = {n , 0};
 	size_t local_size = 64;
 	err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
 	//err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, NULL, 0, NULL, NULL);

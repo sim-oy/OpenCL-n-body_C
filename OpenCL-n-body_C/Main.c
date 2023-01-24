@@ -1,7 +1,6 @@
 #include "Main.h"
 
-#define N_PAR 1
-#define N2 16000
+#define N2 120000
 #define rounding 256
 #define N (N2 % rounding == 0 ? N2 : (N2 - N2 % rounding) + rounding)
 
@@ -13,7 +12,7 @@ int main() {
     printf("N = %d\n", N);
 
     const float G = 0.000000001f;
-    const float smthing = 0.0000000001f;
+    const float smthing = 0.00000001f;
     
     //static float particles[N * 5];
     static particle particles[N];
