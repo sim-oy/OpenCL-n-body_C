@@ -7,7 +7,7 @@ cl_kernel kernelMove;
 cl_mem pos_buf;
 cl_int err;
 
-#define BLOCK_SIZE 10112
+#define BLOCK_SIZE (20224 / 32)
 
 
 void CLInit(particle particles[], int arr_len, float G, float smthing) {

@@ -1,4 +1,19 @@
 
+inline void AtomicAdd(volatile __global float* source, const float operand) {
+	union {
+		unsigned int intVal;
+		float floatVal;
+	} newVal;
+	union {
+		unsigned int intVal;
+		float floatVal;
+	} prevVal;
+	do {
+		prevVal.floatVal = *source;
+		newVal.floatVal = prevVal.floatVal + operand;
+	} while (atomic_cmpxchg((volatile __global unsigned int*)source, prevVal.intVal, newVal.intVal) != prevVal.intVal);
+}
+
 void Zorder(int ind, int* x, int* y) {
 	int len = 0;
 	*x = 0, *y = 0;
@@ -22,16 +37,13 @@ typedef struct {
 __kernel void Calc(__global particle particles[], float G, float smoothing, int N, int block_size) {
 	int i = get_global_id(0);
 	int k = get_global_id(1);
-	if (i == 0) {
-		printf("%d\n", k);
-	}
 
 	float sumX = 0, sumY = 0;
 	for (int j = 0; j < N / (N / block_size); j++)
 	{
-		
-		float distanceX = particles[j + block_size * k].x - particles[j + block_size * k].x;
-		float distanceY = particles[j + block_size * k].y - particles[i + block_size * k].y;
+
+		float distanceX = particles[j + block_size * k].x - particles[i].x;
+		float distanceY = particles[j + block_size * k].y - particles[i].y;
 
 		float x2_y2 = distanceX * distanceX + distanceY * distanceY;
 
@@ -41,11 +53,13 @@ __kernel void Calc(__global particle particles[], float G, float smoothing, int 
 		float dist = rsqrt(x2_y2 * x2_y2 * x2_y2 + smoothing);
 		float b = particles[j + block_size * k].mss * dist;
 
-		sumX += distanceX * b * G;
-		sumY += distanceY * b * G;
+		sumX += distanceX * b;
+		sumY += distanceY * b;
 	}
-	particles[i].vx += sumX;
-	particles[i].vy += sumY;
+	AtomicAdd(&particles[i].vx, sumX * G);
+	AtomicAdd(&particles[i].vy, sumY * G);
+	//particles[i].vx += sumX;
+	//particles[i].vy += sumY;
 }
 
 __kernel void Move(__global particle particles[], int N) {
