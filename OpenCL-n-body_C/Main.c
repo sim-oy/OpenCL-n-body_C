@@ -1,6 +1,6 @@
 #include "Main.h"
 
-#define N2 120000
+#define N2 20000
 #define rounding 256
 #define N (N2 % rounding == 0 ? N2 : (N2 - N2 % rounding) + rounding)
 
