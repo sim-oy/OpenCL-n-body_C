@@ -11,6 +11,7 @@ void Zorder(int ind, int* x, int* y) {
 	}
 }
 
+
 typedef struct {
 	float x;
 	float y;
@@ -24,6 +25,7 @@ __kernel void Calc(__global particle particles[], float G, float smoothing, int 
 
 	float xi = particles[i].x, yi = particles[i].y;
 	float sumX = 0, sumY = 0;
+	#pragma unroll 256
 	for (int j = 0; j < N; j++)
 	{
 		float distanceX = particles[j].x - xi;

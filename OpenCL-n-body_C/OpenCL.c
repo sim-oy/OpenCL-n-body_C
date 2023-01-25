@@ -14,7 +14,7 @@ void CLInit(particle particles[], int arr_len, float G, float smthing) {
 	int n = arr_len / 5;
 	int block_size = BLOCK_SIZE;
 
-	char* sourceName = "Kernel2.cl";
+	char* sourceName = "Kernel.cl";
 	char* shader = RdFstr(sourceName);
 	
 	//printf("%s\n", shader);
@@ -72,8 +72,8 @@ void CLInit(particle particles[], int arr_len, float G, float smthing) {
 	CheckArgErr(kernelCalc, 2, err);
 	err = clSetKernelArg(kernelCalc, 3, sizeof(cl_int), &n);
 	CheckArgErr(kernelCalc, 3, err);
-	err = clSetKernelArg(kernelCalc, 4, sizeof(cl_int), &block_size);
-	CheckArgErr(kernelCalc, 4, err);
+	//err = clSetKernelArg(kernelCalc, 4, sizeof(cl_int), &block_size);
+	//CheckArgErr(kernelCalc, 4, err);
 
 	err = clSetKernelArg(kernelMove, 0, sizeof(cl_mem), &pos_buf);
 	CheckArgErr(kernelMove, 0, err);
@@ -91,13 +91,13 @@ void CLInit(particle particles[], int arr_len, float G, float smthing) {
 void CLRun(particle particles[], int arr_len) {
 	int n = arr_len / 5;
 
-	size_t global_size[2] = {n , n / BLOCK_SIZE};
-	//size_t global_size = n;
+	//size_t global_size[2] = {n , n / BLOCK_SIZE};
+	size_t global_size = n;
 	size_t local_size = 64;
-	//err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
-	err = clEnqueueNDRangeKernel(queue, kernelCalc, 2, NULL, &global_size, NULL, 0, NULL, NULL);
+	err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
+	//err = clEnqueueNDRangeKernel(queue, kernelCalc, 2, NULL, &global_size, NULL, 0, NULL, NULL);
 	CheckErr(err, "Error executing kernel");
-	
+
 	size_t global_size2 = n;
 	err = clEnqueueNDRangeKernel(queue, kernelMove, 1, NULL, &global_size2, NULL, 0, NULL, NULL);
 	CheckErr(err, "Error executing kernel");
