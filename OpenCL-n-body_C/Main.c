@@ -1,8 +1,13 @@
 #include "Main.h"
-
-#define N2 30000
-#define rounding 256
-#define N (N2 % rounding == 0 ? N2 : (N2 - N2 % rounding) + rounding)
+#include "Program.h"
+#include "OpenCL.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <float.h>
+#include <time.h>
+#include <windows.h>
+#include <Cl/cl.h>
 
 int main() {
 	printf("start\n");
@@ -10,19 +15,21 @@ int main() {
     srand(0);
 
     printf("N = %d\n", N);
-
-    const float G = 0.000000001f;
-    const float smthing = 0.00000001f;
     
-    //static float particles[N * 5];
-    static particle particles[N];
+    //static particle particles[N];
 
-    GenerateParticles(particles, N);
+    particle particles;
+    particles.pos = (cl_float2*)malloc(N * sizeof(cl_float2));
+    particles.vel = (cl_float2*)malloc(N * sizeof(cl_float2));
+    particles.mss = (float*)malloc(N * sizeof(float));
+    GenerateParticles(N, particles);
+    //GenerateParticles2(particles, N);
     //ParticlesPreset8(particles, N);
-
-    //char* windowBuffer = (char*)malloc(WINDOW_WIDTH * WINDOW_HEIGHT * 4 * sizeof(char));
-    char windowBuffer[WINDOW_WIDTH * WINDOW_HEIGHT * 4];
     
+    //char* windowBuffer = (char*)malloc(WINDOW_WIDTH * WINDOW_HEIGHT * 4 * sizeof(char));
+    uint8_t windowBuffer[WINDOW_WIDTH * WINDOW_HEIGHT * 4];
+    
+
     sfVideoMode mode = { WINDOW_WIDTH, WINDOW_HEIGHT, 32 };
     sfRenderWindow* window;
 	sfEvent event;
@@ -46,7 +53,7 @@ int main() {
         printf("Error opening to the file");
         return -1;
     }
-    CLInit(particles, N * 5, G, smthing);
+    CLInit(&particles, N * 5, G, smthing);
 
     while (sfRenderWindow_isOpen(window))
     {
@@ -58,17 +65,17 @@ int main() {
                 sfRenderWindow_close(window);
         }
         sfRenderWindow_clear(window, sfBlack);
-
+        /*
         if (WRITE_TO_FILE) {
             for (int i = 0; i < N * 5; i += 5) {
                 fprintf(file, "%f%f\n", 
                 particles[i],
                 particles[i + 1]);
             }
-        }
+        }*/
         
-        CLRun(particles, N * 5);
-        //CalculateSingleArray(particles, N, G, smthing);
+        CLRun(&particles, N * 5, rounding);
+        //CalculateSingleArray(&particles, N, G, smthing);
 
         memset(windowBuffer, 0, sizeof(windowBuffer));
         DrawParticles(particles, windowBuffer);
@@ -99,38 +106,23 @@ int main() {
     fclose(file);
     sfRenderWindow_destroy(window);
 
+    free(particles.pos);
+    free(particles.vel);
+    free(particles.mss);
+
     printf("end\n");
     return 0;
 }
 
-void DrawParticles2(float particles[], char windowBuffer[]) {
+void DrawParticles(particle particles, uint8_t windowBuffer[]) {
     int sum = 0;
     for (int i = 0; i < N; i++) {
-        if (particles[i] < 0 || particles[i] >= 1.0 || particles[i + N] < 0 || particles[i + N] >= 1.0) {
+        if (particles.pos[i].x < 0 || particles.pos[i].x >= 1.0 || particles.pos[i].y < 0 || particles.pos[i].y >= 1.0) {
             continue;
         }
 
-        int x = (int)(particles[i] * WINDOW_WIDTH);
-        int y = (int)(particles[i + N] * WINDOW_HEIGHT);
-
-        int index = (y * WINDOW_WIDTH + x) * 4;
-
-        windowBuffer[index] = 255;
-        windowBuffer[index + 1] = 255;
-        windowBuffer[index + 2] = 255;
-        windowBuffer[index + 3] = 255;
-    }
-}
-
-void DrawParticles(particle particles[], char windowBuffer[]) {
-    int sum = 0;
-    for (int i = 0; i < N; i++) {
-        if (particles[i].x < 0 || particles[i].x >= 1.0 || particles[i].y < 0 || particles[i].y >= 1.0) {
-            continue;
-        }
-
-        int x = (int)(particles[i].x * WINDOW_WIDTH);
-        int y = (int)(particles[i].y * WINDOW_HEIGHT);
+        int x = (int)(particles.pos[i].x * WINDOW_WIDTH);
+        int y = (int)(particles.pos[i].y * WINDOW_HEIGHT);
 
         int index = (y * WINDOW_WIDTH + x) * 4;
 
@@ -151,11 +143,11 @@ double DoubleArraySum(double array[], int len) {
 }
 
 
-void DrawTrackingCircle(sfRenderWindow* window, particle particles[]) {
+void DrawTrackingCircle(sfRenderWindow* window, particle particles) {
     
-    int x = (int)(particles[0].x * WINDOW_WIDTH);
+    int x = (int)(particles.pos[0].x * WINDOW_WIDTH);
     //int y = (int)(particles[1] * WINDOW_HEIGHT);
-    int y = (int)(particles[0].y * WINDOW_HEIGHT);
+    int y = (int)(particles.pos[0].y * WINDOW_HEIGHT);
 
     sfCircleShape* circle = sfCircleShape_create();
     sfCircleShape_setRadius(circle, 2.0f);

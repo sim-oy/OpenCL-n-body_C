@@ -37,7 +37,7 @@ typedef struct {
 __kernel void Calc(__global particle particles[], float G, float smoothing, int N, int block_size) {
 	int i = get_global_id(0);
 	int k = get_global_id(1);
-
+	barrier(CLK_LOCAL_MEM_FENCE);
 	float sumX = 0, sumY = 0;
 	for (int j = 0; j < N / (N / block_size); j++)
 	{
@@ -56,8 +56,9 @@ __kernel void Calc(__global particle particles[], float G, float smoothing, int 
 		sumX += distanceX * b;
 		sumY += distanceY * b;
 	}
-	AtomicAdd(&particles[i].vx, sumX * G);
-	AtomicAdd(&particles[i].vy, sumY * G);
+	barrier(CLK_LOCAL_MEM_FENCE);
+	particles[i].vx += sumX * G;
+	particles[i].vy += sumY * G;
 	//particles[i].vx += sumX;
 	//particles[i].vy += sumY;
 }

@@ -1,5 +1,7 @@
 #include "OpenCL.h"
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 cl_command_queue queue;
 cl_kernel kernelCalc;
@@ -7,16 +9,16 @@ cl_kernel kernelMove;
 cl_mem pos_buf;
 cl_int err;
 
-#define BLOCK_SIZE (20224 / 32)
+#define BLOCK_SIZE (100096 / 64)
 
 
-void CLInit(particle particles[], int arr_len, float G, float smthing) {
+void CLInit(particle* particles, int arr_len, float G, float smthing) {
 	int n = arr_len / 5;
 	int block_size = BLOCK_SIZE;
-
-	char* sourceName = "Kernel.cl";
-	char* shader = RdFstr(sourceName);
 	
+	char* sourceName = "Kernel.cl";
+	char* shader = Preprocstr(RdFstr(sourceName), n);
+
 	//printf("%s\n", shader);
 
 	cl_uint num_platforms;
@@ -39,7 +41,7 @@ void CLInit(particle particles[], int arr_len, float G, float smthing) {
 
 	pos_buf = clCreateBuffer(context, CL_MEM_READ_WRITE, arr_len * sizeof(cl_float), NULL, &err);
 	CheckErr(err, "Error creating buffer");
-
+	
 	cl_program program = clCreateProgramWithSource(context, 1, &shader, NULL, &err);
 	CheckErr(err, "Error creating program with source");
 
@@ -80,7 +82,9 @@ void CLInit(particle particles[], int arr_len, float G, float smthing) {
 	err = clSetKernelArg(kernelMove, 1, sizeof(cl_int), &n);
 	CheckArgErr(kernelMove, 1, err);
 
-	clEnqueueWriteBuffer(queue, pos_buf, CL_FALSE, 0, arr_len * sizeof(cl_float), particles, 0, NULL, NULL);
+	clEnqueueWriteBuffer(queue, pos_buf, CL_FALSE, 0, n * 2 * sizeof(cl_float), particles->pos, 0, NULL, NULL);
+	clEnqueueWriteBuffer(queue, pos_buf, CL_FALSE, n * 2 * sizeof(cl_float), n * 2 * sizeof(cl_float), particles->vel, 0, NULL, NULL);
+	clEnqueueWriteBuffer(queue, pos_buf, CL_FALSE, n * 2 * sizeof(cl_float) * 2, n * sizeof(cl_float), particles->mss, 0, NULL, NULL);
 
 	clReleaseProgram(program);
 	clReleaseContext(context);
@@ -88,23 +92,28 @@ void CLInit(particle particles[], int arr_len, float G, float smthing) {
 	printf("CL init done!\n");
 }
 
-void CLRun(particle particles[], int arr_len) {
+void CLRun(particle *particles, int arr_len, int round_size) {
 	int n = arr_len / 5;
 
 	//size_t global_size[2] = {n , n / BLOCK_SIZE};
 	size_t global_size = n;
 	size_t local_size = 64;
+	//local_size = local_size <= round_size ? local_size : NULL;
 	
 	err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
-	//err = clEnqueueNDRangeKernel(queue, kernelCalc, 2, NULL, &global_size, NULL, 0, NULL, NULL);
+	//err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, NULL, 0, NULL, NULL);
 	CheckErr(err, "Error executing kernel");
 
 	size_t global_size2 = n;
 	err = clEnqueueNDRangeKernel(queue, kernelMove, 1, NULL, &global_size2, NULL, 0, NULL, NULL);
 	CheckErr(err, "Error executing kernel");
 
-	err = clEnqueueReadBuffer(queue, pos_buf, CL_FALSE, 0, arr_len * sizeof(cl_float), particles, 0, NULL, NULL);
-	CheckErr(err, "Error reading buffer");
+	err = clEnqueueReadBuffer(queue, pos_buf, CL_FALSE, 0, n * 2 * sizeof(cl_float), particles->pos, 0, NULL, NULL);
+	CheckErr(err, "Error reading buffer1");
+	err = clEnqueueReadBuffer(queue, pos_buf, CL_FALSE, n * 2 * sizeof(cl_float), n * 2 * sizeof(cl_float), particles->vel, 0, NULL, NULL);
+	CheckErr(err, "Error reading buffer2");
+	err = clEnqueueReadBuffer(queue, pos_buf, CL_FALSE, n * 2 * sizeof(cl_float) * 2, n * sizeof(cl_float), particles->mss, 0, NULL, NULL);
+	CheckErr(err, "Error reading buffer3");
 	
 	err = clFinish(queue);
 	CheckErr(err, "Error finishing queue");
@@ -140,6 +149,20 @@ char* RdFstr(char* filename) {
 	string[file_size] = '\0';
 
 	return string;
+}
+
+char* Preprocstr(char* str, int n) {
+	float n2 = (float)n;
+	int count = 0;
+	while ((int)n2 > 0) {
+		n2 /= 10;
+		count++;
+	}
+
+	int str2_size = strlen(str) + count * 3;
+	char* str2 = (char*)malloc(str2_size * sizeof(char));
+	sprintf_s(str2, str2_size * sizeof(char), str, n, n, n);
+	return str2;
 }
 
 void CheckErr(cl_int err, char* msg) {

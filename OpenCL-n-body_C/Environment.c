@@ -1,22 +1,25 @@
 #include "Environment.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-void GenerateParticles2(float particles[], int N) {
-    for (int i = 0; i < N; i++) {
-        particles[i] = randf();
-        particles[i + N] = randf();
-        particles[i + N * 2] = 0;
-        particles[i + N * 3] = 0;
-        particles[i + N * 4] = randf();
-    }
-}
-
-void GenerateParticles(particle particles[], int N) {
+/*
+void GenerateParticles2(particle particles[], int N) {
     for (int i = 0; i < N; i++) {
         particles[i].x = randf();
         particles[i].y = randf();
         particles[i].vx = 0;
         particles[i].vy = 0;
         particles[i].mss = randf();
+    }
+}*/
+
+void GenerateParticles(int N, particle particles) {
+    for (int i = 0; i < N; i++) {
+        particles.pos[i].x = randf();
+        particles.pos[i].y = randf();
+        particles.vel[i].x = 0;
+        particles.vel[i].y = 0;
+        particles.mss[i] = randf();
     }
 }
 
