@@ -17,7 +17,7 @@ void CLInit(particle* particles, int arr_len, float G, float smthing) {
 	int block_size = BLOCK_SIZE;
 	
 	char* sourceName = "Kernel.cl";
-	char* shader = Preprocstr(RdFstr(sourceName), n);
+	char* shader = RdFstr(sourceName);
 
 	//printf("%s\n", shader);
 
@@ -44,8 +44,14 @@ void CLInit(particle* particles, int arr_len, float G, float smthing) {
 	
 	cl_program program = clCreateProgramWithSource(context, 1, &shader, NULL, &err);
 	CheckErr(err, "Error creating program with source");
+	free(shader);
 
-	err = clBuildProgram(program, 1, &devices[0], "-cl-std=CL3.0", NULL, NULL);
+	char build_args[1024];
+	if (snprintf(build_args, sizeof(build_args), KERNEL_BUILD_ARGS, n) < 0) {
+		printf("Error build arguments too long: %s\n", build_args);
+		exit(1);
+	}
+	err = clBuildProgram(program, 1, &devices[0], build_args, NULL, NULL);
 	if (err != CL_SUCCESS) {
 		size_t log_size;
 		clGetProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
@@ -149,20 +155,6 @@ char* RdFstr(char* filename) {
 	string[file_size] = '\0';
 
 	return string;
-}
-
-char* Preprocstr(char* str, int n) {
-	float n2 = (float)n;
-	int count = 0;
-	while ((int)n2 > 0) {
-		n2 /= 10;
-		count++;
-	}
-
-	int str2_size = strlen(str) + count * 3;
-	char* str2 = (char*)malloc(str2_size * sizeof(char));
-	sprintf_s(str2, str2_size * sizeof(char), str, n, n, n);
-	return str2;
 }
 
 void CheckErr(cl_int err, char* msg) {
