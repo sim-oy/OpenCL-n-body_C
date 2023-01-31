@@ -27,7 +27,7 @@ __kernel void Calc(__global particle* particles, float G, float smoothing) {
 		//float dist = sqrt(x2_y2 * x2_y2 * x2_y2);
 		//float b = particles[j].mss / (dist + smoothing);
 
-		float dist = half_rsqrt(x2_y2 * x2_y2 * x2_y2 + smoothing);
+		float dist = rsqrt(x2_y2 * x2_y2 * x2_y2 + smoothing);
 		float b = particles->mss[j] * dist;
 
 		sumX += distanceX * b;
