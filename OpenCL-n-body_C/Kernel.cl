@@ -1,8 +1,8 @@
 
 typedef struct {
-	float2 pos[%d];
-	float2 vel[%d];
-	float mss[%d];
+	float2 pos[PARTICLES_COUNT];
+	float2 vel[PARTICLES_COUNT];
+	float mss[PARTICLES_COUNT];
 } particle;
 
 __kernel void Calc(__global particle* particles, float G, float smoothing, int N) {
