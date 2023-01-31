@@ -9,7 +9,7 @@
 #include <windows.h>
 #include <Cl/cl.h>
 
-int main() {
+int main(void) {
 	printf("start\n");
 
     srand(0);
@@ -18,10 +18,11 @@ int main() {
     
     //static particle particles[N];
 
-    particle particles;
-    particles.pos = (cl_float2*)malloc(N * sizeof(cl_float2));
-    particles.vel = (cl_float2*)malloc(N * sizeof(cl_float2));
-    particles.mss = (float*)malloc(N * sizeof(float));
+    particle particles = {
+        .pos = (cl_float2*)malloc(N * sizeof(cl_float2)),
+        .vel = (cl_float2*)malloc(N * sizeof(cl_float2)),
+        .mss = (float*)malloc(N * sizeof(float))
+    };
     GenerateParticles(N, particles);
     //GenerateParticles2(particles, N);
     //ParticlesPreset8(particles, N);
@@ -45,7 +46,7 @@ int main() {
     clock_t oa_tim_strt = 0, oa_tim_end = 0;
 
     int frames = 0;
-    double times[FRAMES_PER_PRINT];
+    double times[FRAMES_PER_PRINT] = { 0 };
 
     FILE* file = NULL;
     if (fopen_s(&file, "data.txt", "w") != 0)
@@ -115,7 +116,6 @@ int main() {
 }
 
 void DrawParticles(particle particles, uint8_t windowBuffer[]) {
-    int sum = 0;
     for (int i = 0; i < N; i++) {
         if (particles.pos[i].x < 0 || particles.pos[i].x >= 1.0 || particles.pos[i].y < 0 || particles.pos[i].y >= 1.0) {
             continue;

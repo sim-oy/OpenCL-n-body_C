@@ -7,14 +7,14 @@ cl_command_queue queue;
 cl_kernel kernelCalc;
 cl_kernel kernelMove;
 cl_mem pos_buf;
-cl_int err;
 
 #define BLOCK_SIZE (100096 / 64)
 
 
 void CLInit(particle* particles, int arr_len, float G, float smthing) {
+
 	int n = arr_len / 5;
-	int block_size = BLOCK_SIZE;
+	//int block_size = BLOCK_SIZE;
 	
 	char* sourceName = "Kernel.cl";
 	char* shader = RdFstr(sourceName);
@@ -22,9 +22,11 @@ void CLInit(particle* particles, int arr_len, float G, float smthing) {
 	//printf("%s\n", shader);
 
 	cl_uint num_platforms;
-	clGetPlatformIDs(0, NULL, &num_platforms);
+	cl_int err;
+	err = clGetPlatformIDs(0, NULL, &num_platforms);
+	CheckErr(err, "Error getting platform ID count");
 	cl_platform_id* platforms = (cl_platform_id*)malloc(num_platforms * sizeof(cl_platform_id));
-	clGetPlatformIDs(num_platforms, platforms, NULL);
+	err = clGetPlatformIDs(num_platforms, platforms, NULL);
 	CheckErr(err, "Error getting platform IDs");
 
 	cl_uint num_devices;
@@ -78,15 +80,11 @@ void CLInit(particle* particles, int arr_len, float G, float smthing) {
 	CheckArgErr(kernelCalc, 1, err);
 	err = clSetKernelArg(kernelCalc, 2, sizeof(cl_float), &smthing);
 	CheckArgErr(kernelCalc, 2, err);
-	err = clSetKernelArg(kernelCalc, 3, sizeof(cl_int), &n);
-	CheckArgErr(kernelCalc, 3, err);
 	//err = clSetKernelArg(kernelCalc, 4, sizeof(cl_int), &block_size);
 	//CheckArgErr(kernelCalc, 4, err);
 
 	err = clSetKernelArg(kernelMove, 0, sizeof(cl_mem), &pos_buf);
 	CheckArgErr(kernelMove, 0, err);
-	err = clSetKernelArg(kernelMove, 1, sizeof(cl_int), &n);
-	CheckArgErr(kernelMove, 1, err);
 
 	clEnqueueWriteBuffer(queue, pos_buf, CL_FALSE, 0, n * 2 * sizeof(cl_float), particles->pos, 0, NULL, NULL);
 	clEnqueueWriteBuffer(queue, pos_buf, CL_FALSE, n * 2 * sizeof(cl_float), n * 2 * sizeof(cl_float), particles->vel, 0, NULL, NULL);
@@ -103,9 +101,10 @@ void CLRun(particle *particles, int arr_len, int round_size) {
 
 	//size_t global_size[2] = {n , n / BLOCK_SIZE};
 	size_t global_size = n;
-	size_t local_size = 64;
+	const size_t local_size = 64;
 	//local_size = local_size <= round_size ? local_size : NULL;
 	
+	cl_int err;
 	err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
 	//err = clEnqueueNDRangeKernel(queue, kernelCalc, 1, NULL, &global_size, NULL, 0, NULL, NULL);
 	CheckErr(err, "Error executing kernel");
@@ -187,6 +186,8 @@ void CheckArgErr(cl_kernel kernel, int arg_indx, cl_int err) {
 
 void PrintWorkGroupSizes(cl_device_id device, cl_kernel kernel) {
 	size_t preferred_work_group_size;
+
+	cl_int err;
 	err = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_WORK_GROUP_SIZE,
 		sizeof(preferred_work_group_size), &preferred_work_group_size, NULL);
 	CheckErr(err, "Error getting kernel CL_KERNEL_WORK_GROUP_SIZE");

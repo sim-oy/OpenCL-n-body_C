@@ -1,3 +1,6 @@
+#ifndef PARTICLES_COUNT
+#define PARTICLES_COUNT -1
+#endif
 
 typedef struct {
 	float2 pos[PARTICLES_COUNT];
@@ -5,8 +8,8 @@ typedef struct {
 	float mss[PARTICLES_COUNT];
 } particle;
 
-__kernel void Calc(__global particle* particles, float G, float smoothing, int N) {
-	int i = get_global_id(0);
+__kernel void Calc(__global particle* particles, float G, float smoothing) {
+	unsigned int i = get_global_id(0);
 
 	float xi = particles->pos[i].x;
 	float yi = particles->pos[i].y;
@@ -14,7 +17,7 @@ __kernel void Calc(__global particle* particles, float G, float smoothing, int N
 	float sumY = 0;
 
 	#pragma unroll 256
-	for (int j = 0; j < N; j++)
+	for (int j = 0; j < PARTICLES_COUNT; j++)
 	{
 		float distanceX = particles->pos[j].x - xi;
 		float distanceY = particles->pos[j].y - yi;
@@ -35,8 +38,8 @@ __kernel void Calc(__global particle* particles, float G, float smoothing, int N
 	particles->vel[i].y += sumY * G;
 }
 
-__kernel void Move(__global particle* particles, int N) {
-	int i = get_global_id(0);
+__kernel void Move(__global particle* particles) {
+	unsigned int i = get_global_id(0);
 	particles->pos[i].x += particles->vel[i].x;
 	particles->pos[i].y += particles->vel[i].y;
 }
