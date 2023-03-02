@@ -11,18 +11,15 @@ typedef struct {
 __kernel void Calc(__global particle* particles, float G, float smoothing) {
 	unsigned int i = get_global_id(0);
 
-	float xi = particles->pos[i].x;
-	float yi = particles->pos[i].y;
-	float sumX = 0;
-	float sumY = 0;
+	float2 xi = particles->pos[i];
+	float2 sumXY = 0;
 
 	#pragma unroll 256
 	for (int j = 0; j < PARTICLES_COUNT; j++)
 	{
-		float distanceX = particles->pos[j].x - xi;
-		float distanceY = particles->pos[j].y - yi;
+		float2 distanceXY = particles->pos[j] - xi;
 
-		float x2_y2 = distanceX * distanceX + distanceY * distanceY;
+		float x2_y2 = distanceXY.x * distanceXY.x + distanceXY.y * distanceXY.y;
 
 		//float dist = sqrt(x2_y2 * x2_y2 * x2_y2);
 		//float b = particles[j].mss / (dist + smoothing);
@@ -30,16 +27,13 @@ __kernel void Calc(__global particle* particles, float G, float smoothing) {
 		float dist = rsqrt(x2_y2 * x2_y2 * x2_y2 + smoothing);
 		float b = particles->mss[j] * dist;
 
-		sumX += distanceX * b;
-		sumY += distanceY * b;
+		sumXY += distanceXY * b;
 	}
 
-	particles->vel[i].x += sumX * G;
-	particles->vel[i].y += sumY * G;
+	particles->vel[i] += sumXY * G;
 }
 
 __kernel void Move(__global particle* particles) {
 	unsigned int i = get_global_id(0);
-	particles->pos[i].x += particles->vel[i].x;
-	particles->pos[i].y += particles->vel[i].y;
+	particles->pos[i] += particles->vel[i];
 }
