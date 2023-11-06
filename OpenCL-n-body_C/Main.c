@@ -66,14 +66,15 @@ int main(void) {
                 sfRenderWindow_close(window);
         }
         sfRenderWindow_clear(window, sfBlack);
-        /*
+        
         if (WRITE_TO_FILE) {
-            for (int i = 0; i < N * 5; i += 5) {
-                fprintf(file, "%f%f\n", 
-                particles[i],
-                particles[i + 1]);
+            for (int i = 0; i < N; i++) {
+                fprintf(file, "%f %f ", 
+                particles.pos[i].x,
+                particles.pos[i].y);
             }
-        }*/
+            fprintf(file, "\n");
+        }
         
         CLRun(&particles, N * 5, rounding);
         //CalculateSingleArray(&particles, N, G, smthing);

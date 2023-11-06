@@ -9,9 +9,9 @@
 #define FRAMES_PER_PRINT 100
 #define WINDOW_WIDTH 500
 #define WINDOW_HEIGHT 500
-#define WRITE_TO_FILE 0
+#define WRITE_TO_FILE 1
 
-#define N2 120000
+#define N2 12
 #define rounding 256
 #define N (N2 % rounding == 0 ? N2 : (N2 - N2 % rounding) + rounding)
 
